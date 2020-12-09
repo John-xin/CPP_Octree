@@ -37,11 +37,11 @@ or
 
 3b. upload my code to github repository 
 <git add .> //压入缓存，或者说工作区
-<git commit -m "first commit">  //提交入管理器，或者说暂存区 
+<git commit -m "first commit"> //提交入管理器，或者说暂存区 
 <git remote add origin aSshAddress> //create name representing this long address
 <git push -u origin master> //以主干master提交代码>  
   
-4 useful git commands
+4. useful git commands
 <git remote -v> //list all names
 <git remote remove aName> //delete name
  
