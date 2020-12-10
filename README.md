@@ -6,7 +6,7 @@
 3. install
 
 # create ssh key
-1. input this command and follow instructions
+1. input this command and follow instructions\
 `ssh-keygen -t rsa -C "ewangxin11@gmail.com"`
 
 2. add the key to github account
