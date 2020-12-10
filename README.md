@@ -35,9 +35,9 @@ git init //初始化为git仓库
   
 3a. clone code from github repository to current folder\
 `git clone -b <branchname> <remote-repo-url> // replace this address`
-\
+
 or
-\
+
 3b. upload my code to github repository 
 ```
 git add . //压入缓存，或者说工作区
