@@ -31,7 +31,8 @@ https://github.com/settings/keys
 .git should be created under codeFolder
   
 3a. clone code from github repository to current folder
-<git clone https://github.com/WytheO/StudyContainer.git> // replace this address
+git clone -b <branchname> <remote-repo-url> // replace this address
+
 
 or
 
