@@ -20,12 +20,12 @@ https://github.com/settings/keys
 2. copy the ssh address not http
 
 ## use git to upload code
-1. set global user name and email\
+1. set global user name and email
 ```
 git config --global user.name 这里是你的用户名
 git config --global user.email example@email.com
 ```
-2. enter code folder and init a git repository\
+2. enter code folder and init a git repository
 ```
 cd E:
 cd codeFolder
@@ -35,10 +35,9 @@ git init //初始化为git仓库
   
 3a. clone code from github repository to current folder\
 `git clone -b <branchname> <remote-repo-url> // replace this address`
-
-
+\
 or
-
+\
 3b. upload my code to github repository 
 ```
 git add . //压入缓存，或者说工作区
