@@ -7,7 +7,7 @@
 
 # create ssh key
 1. input this command and follow instructions
-`ssh-keygen -t rsa -C "ewangxin11@gmail.com"
+`ssh-keygen -t rsa -C "ewangxin11@gmail.com"`
 
 2. add the key to github account
 https://github.com/settings/keys
