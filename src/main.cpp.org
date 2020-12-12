@@ -1,0 +1,37 @@
+/*
+ * main.cpp
+ *
+ *  Created on: 24 Jan, 2020
+ *      Author: WangXJ
+ */
+#include "cOctree.h"
+#include "cGeomData.h"
+
+//extern commonFunc* commonFunc::theCommonFunc;
+//extern cGeomData* cGeomData::theGeomData;
+
+int main()
+{
+    const char* fileName = "simple_bldg.stl";
+    //const char* fileName ="F:\\Project\\cpluplus\\Eclipse_Proj\\Octree\\Octree\\cube_1m.stl";
+    cGeomData* geom= cGeomData::getInstance();
+    geom->readSTLData(fileName);
+
+    cOctree* myTree=new cOctree();
+    vector<double> pt3D(3);
+    pt3D[0]=0.15;
+    pt3D[1]=0.5;
+    pt3D[2]=0.1;
+    myTree->defineBody(pt3D);
+    myTree->buildOctree();
+    myTree->saveAsOFMesh();
+    //std::cout<<"NumOfNodes is "<< myTree->countNodes(myTree->root) <<"\n";
+    extern int numOfOrderChanged;
+    cout<<"number of order changed is "<< numOfOrderChanged <<"\n";
+
+    return 0;
+
+}
+
+
+

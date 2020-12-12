@@ -1,0 +1,12 @@
+﻿  Octree_20201212.cpp
+  cBoundary.cpp
+  cFace.cpp
+  cFeature.cpp
+  cGeomData.cpp
+  cLine.cpp
+  cOctNode.cpp
+  cOctree.cpp
+  commonFunc.cpp
+  cTri.cpp
+  Generating Code...
+  Octree_20201212.vcxproj -> D:\Johnx\Person\cpp_octree\Octree_20201212\Debug\Octree_20201212.exe
