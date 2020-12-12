@@ -50,5 +50,6 @@ git push -u origin master //以主干master提交代码>
 ```
 git remote -v //list all names
 git remote remove aName //delete name
+git pull 
 ```
  
