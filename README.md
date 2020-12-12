@@ -52,6 +52,11 @@ git commit -m "first commit" //提交入管理器，或者说暂存区
 git checkout -b dev //switch to a new brach 'dev'
 git push -u origin dev //以dev提交代码
 ``` 
+4. update local repository from remote (github)
+```
+git fetch origin
+git merge dev origin/dev
+```
 ## useful git commands
 ```
 git remote -v //list all names
