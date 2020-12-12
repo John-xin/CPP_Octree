@@ -43,13 +43,20 @@ or
 git add . //压入缓存，或者说工作区
 git commit -m "first commit" //提交入管理器，或者说暂存区 
 git remote add origin aSshAddress //create name representing this long address
-git push -u origin master //以主干master提交代码>  
+git push -u origin master //以主干master提交代码
 ``` 
-  
+3c. upload code as new branch
+```
+git add . //压入缓存，或者说工作区
+git commit -m "first commit" //提交入管理器，或者说暂存区 
+git checkout -b dev //switch to a new brach 'dev'
+git push -u origin dev //以dev提交代码
+``` 
 ## useful git commands
 ```
 git remote -v //list all names
 git remote remove aName //delete name
 git pull 
+git checkout -b dev //switch to a new brach 'dev'
 ```
  
