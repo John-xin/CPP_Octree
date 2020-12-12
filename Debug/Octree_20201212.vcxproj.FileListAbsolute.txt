@@ -1,2 +1,0 @@
-D:\Johnx\Person\cpp_octree\Octree_20201212\Debug\Octree_20201212.exe
-D:\Johnx\Person\cpp_octree\Octree_20201212\Debug\Octree_20201212.pdb
