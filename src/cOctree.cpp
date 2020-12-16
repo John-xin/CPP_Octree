@@ -180,11 +180,13 @@ void cOctree::setup_geoFEdgesList()
 void cOctree::setup_geoFPtsList()
 {
     cFeaturePt* fPt=new cFeaturePt();
+
     for (unsigned int i=0; i<geoFEdgesList.size(); i++) {
     	for (int j=0; j<2; j++) {
     		fPt->indx=geoFEdgesList[i]->ptIndx_int2[j];
     		if(fPt->isNewInList(geoFPtsList)){
-    			geoFPtsList.push_back(fPt);
+				cFeaturePt* newFPt = new cFeaturePt(fPt->indx);
+    			geoFPtsList.push_back(newFPt);
     		}
         }
     }

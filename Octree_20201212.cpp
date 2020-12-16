@@ -2,10 +2,29 @@
 //
 
 #include <iostream>
+#include "src/cGeomData.h"
+#include "src/cOctree.h"
+
+using namespace std;
 
 int main()
 {
-    std::cout << "Hello World!\n";
+    const char* fileName = "./etc/simple_bldg.stl";
+    //const char* fileName ="F:\\Project\\cpluplus\\Eclipse_Proj\\Octree\\Octree\\cube_1m.stl";
+    cGeomData* geom = cGeomData::getInstance();
+    geom->readSTLData(fileName);
+  
+    cOctree* myTree = new cOctree();
+    vector<double> pt3D(3);
+    pt3D[0] = 0.15;
+    pt3D[1] = 0.5;
+    pt3D[2] = 0.1;
+    myTree->defineBody(pt3D);
+    myTree->buildOctree();
+    //myTree->saveAsOFMesh();
+    ////std::cout<<"NumOfNodes is "<< myTree->countNodes(myTree->root) <<"\n";
+    //extern int numOfOrderChanged;
+    //cout << "number of order changed is " << numOfOrderChanged << "\n";
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu

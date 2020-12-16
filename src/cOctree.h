@@ -35,8 +35,8 @@ using namespace std;
 class cOctree {
 public:
 
-    static const int MAX_OCTREE_LEVELS = 6;
-    static const int MIN_OCTREE_LEVELS = 5;
+    static const int MAX_OCTREE_LEVELS = 3;
+    static const int MIN_OCTREE_LEVELS = 2;
     static const int MAX_OCTNODE_FEATS = 5;
     int branchOffsets[8][3];
     cOctNode root;
