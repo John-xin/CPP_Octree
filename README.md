@@ -56,6 +56,10 @@ git push -u origin dev //以dev提交代码
 ```
 git fetch origin
 git merge dev origin/dev
+
+git stash
+git pull
+git stash pop
 ```
 ## useful git commands
 ```
