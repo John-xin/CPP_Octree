@@ -20,7 +20,7 @@ int main()
     pt3D[1] = 0.5;
     pt3D[2] = 0.1;
     myTree->defineBody(pt3D);
-    myTree->buildOctree();
+    //myTree->buildOctree();
     //myTree->saveAsOFMesh();
     ////std::cout<<"NumOfNodes is "<< myTree->countNodes(myTree->root) <<"\n";
     //extern int numOfOrderChanged;
