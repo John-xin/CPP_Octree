@@ -304,41 +304,34 @@ void cOctNode::removeExtraFeats() {
 //	cFeaturePt *fPt;
 //	cFeatureEdge *fEdge;
 //	cTri *fTri;
+    
+    //use a tmpList to keep the elems in the node and replace geoFPtsList by tmpList
+    //remove feature point
+    vector <cFeaturePt*> tmpGeoFPtsList;
+    for (vector <cFeaturePt*>::iterator it = geoFPtsList.begin(); it != geoFPtsList.end(); it++) {
+        if ((*it)->isInNode(this)) {
+            tmpGeoFPtsList.push_back(*it);
+        }
+    }
+    geoFPtsList = tmpGeoFPtsList;
 
-	vector <cFeaturePt*>::iterator it = geoFPtsList.begin();
-	while (it != geoFPtsList.end())
-	{
-		if(!(*it)->isInNode(this)){ //remove feature point
-	        *it=*(geoFPtsList.end()-1);
-	        geoFPtsList.pop_back();
+    //remove feature edge
+    vector <cFeatureEdge*> tmpGeoFEdgesList;
+    for (vector <cFeatureEdge*>::iterator it = geoFEdgesList.begin(); it != geoFEdgesList.end(); it++) {
+        if ((*it)->isInNode(this)) {
+            tmpGeoFEdgesList.push_back(*it);
+        }
+    }
+    geoFEdgesList = tmpGeoFEdgesList;
 
-		}else{
-	      ++it;
-		}
-	}
-
-	vector <cFeatureEdge*>::iterator it2 = geoFEdgesList.begin();
-	while (it2 != geoFEdgesList.end())
-	{
-		if(!(*it2)->isInNode(this)){ //remove feature edge
-	        *it2=*(geoFEdgesList.end()-1);
-	        geoFEdgesList.pop_back();
-
-		}else{
-	      ++it2;
-		}
-	}
-
-	vector <cTri*>::iterator it3 = geoFFacesList.begin();
-	while (it3  != geoFFacesList.end())
-	{
-		if(!(*it3) ->isInNode(this)){ //remove feature face
-	        *it3=*(geoFFacesList.end()-1);
-	        geoFFacesList.pop_back();
-		}else{
-	      ++it3 ;
-		}
-	}
+    //remove feature face
+    vector <cTri*> tmpGeoFFacesList;
+    for (vector <cTri*>::iterator it = geoFFacesList.begin(); it != geoFFacesList.end(); it++) {
+        if ((*it)->isInNode(this)) {
+            tmpGeoFFacesList.push_back(*it);
+        }
+    }
+    tmpGeoFFacesList = geoFFacesList;
 }
 
 bool cOctNode::isPtInNode(vector<double> pt) {
