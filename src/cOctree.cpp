@@ -229,8 +229,8 @@ void cOctree::buildOctree() {
     setup_leafNodesNbr();//n*logN
     setup_nodesState(); //non-boundary node -> identify interior / exterior node
     //delExtNodes(root);
-    cOctNode* aTMPNode= getNodeFromId("0-0-3-3-3-2");
-    cout<<aTMPNode->state;
+    //cOctNode* aTMPNode= getNodeFromId("0-0-3-3-3-2");
+    //cout<<aTMPNode->state;
 
 
     //4. +++++++++++++++++++++++++++
@@ -836,10 +836,10 @@ void cOctree::setup_bNodesList(cOctNode* node) {
     }
 }
 void cOctree::findBNode(cOctNode* node) {
-	if(node->geoFFacesList.size()!=0){
+	if(node->geoFPtsList.size()!=0){ //node contains feature pt -> boundary node
 		node->state=0; //boundary node
 		bNodesList.push_back(node);
-	}else{
+	}else{ //node does not contain feature pt -> non boundary node
 		nonBNodesList.push_back(node);
 	}
 }
@@ -873,33 +873,42 @@ void cOctree::findNodeState(cOctNode* node) {
 }
 void cOctree::setup_nodesState() {
 	cOctNode *node;
-	node=nonBNodesList[0];
-	findNodeState(node);
-	int numOfNodes=0;
+	if (nonBNodesList.size() != 0) {
+		node = nonBNodesList[0];
+		findNodeState(node);
+		int numOfNodes = 0;
 
-	if (node->state==1){
-		setup_nbrNodesState(node);
-		for(unsigned i=0; i<nonBNodesList.size();i++){
-			if(nonBNodesList[i]->state!=1){
-				nonBNodesList[i]->state=-1;
-				numOfNodes++;
+		if (node->state == 1) {
+			setup_nbrNodesState(node);
+			for (unsigned i = 0; i < nonBNodesList.size(); i++) {
+				if (nonBNodesList[i]->state != 1) {
+					nonBNodesList[i]->state = -1;
+					numOfNodes++;
+				}
 			}
 		}
-	}else if (node->state==-1){
-		setup_nbrNodesState(node);
-		for(unsigned i=0; i<nonBNodesList.size();i++){
-			if(nonBNodesList[i]->state!=-1){
-				nonBNodesList[i]->state=1;
-				numOfNodes++;
+		else if (node->state == -1) {
+			setup_nbrNodesState(node);
+			for (unsigned i = 0; i < nonBNodesList.size(); i++) {
+				if (nonBNodesList[i]->state != -1) {
+					nonBNodesList[i]->state = 1;
+					numOfNodes++;
+				}
 			}
 		}
+
+		if (node->state == -1) {
+			cout << "number of Interior nodes is " << numOfNodes << "\n";
+		}
+		else {
+			cout << "number of Exterior nodes is " << numOfNodes << "\n\n";
+		}
+	}
+	else {
+		cout << "all notes are bNodes!!!\n";
 	}
 
-	if(node->state==-1){
-		cout<<"number of Interior nodes is "<<numOfNodes<<"\n";
-	}else{
-		cout<<"number of Exterior nodes is "<<numOfNodes<<"\n\n";
-	}
+
 }
 
 void cOctree::setup_nbrNodesState(cOctNode* node) {
@@ -1271,7 +1280,7 @@ void cOctree::saveAsOFMesh() {
 }
 
 void cOctree::saveAsOFMeshPts() {
-	string fileName="points";
+	string fileName="./output/constant/polyMesh/points";
 	ofstream myFile;
 		myFile.open(fileName, ios::ate|ios::out);
 		if (!myFile.is_open()){
@@ -1300,7 +1309,7 @@ void cOctree::saveAsOFMeshPts() {
 }
 
 void cOctree::saveAsOFMeshFaces() {
-	string fileName="faces";
+	string fileName="./output/constant/polyMesh/faces";
 	ofstream myFile;
 		myFile.open(fileName, ios::ate|ios::out);//open file for writing; if file exists, overwrite
 		if (!myFile.is_open()){
@@ -1362,7 +1371,7 @@ void cOctree::saveAsOFMeshFaces() {
 }
 
 void cOctree::saveAsOFMeshNeis() {
-	string fileName="neighbour";
+	string fileName="./output/constant/polyMesh/neighbour";
 	ofstream myFile;
 		myFile.open(fileName, ios::ate|ios::out);
 		if (!myFile.is_open()){
@@ -1392,7 +1401,7 @@ void cOctree::saveAsOFMeshNeis() {
 }
 
 void cOctree::saveAsOFMeshOwns() {
-	string fileName="owner";
+	string fileName="./output/constant/polyMesh/owner";
 	ofstream myFile;
 		myFile.open(fileName, ios::ate|ios::out);
 		if (!myFile.is_open()){
@@ -1432,7 +1441,7 @@ void cOctree::saveAsOFMeshOwns() {
 }
 
 void cOctree::saveAsOFMeshBds() {
-	string fileName="boundary";
+	string fileName="./output/constant/polyMesh/boundary";
 	ofstream myFile;
 		myFile.open(fileName, ios::ate|ios::out);
 		if (!myFile.is_open()){
@@ -1469,6 +1478,31 @@ void cOctree::saveAsOFMeshBds() {
 
 		myFile << ")" << endl;
 		myFile.close();
+}
+
+void cOctree::saveFeaturePts()
+{
+	string fileName = "./output/featruePts.txt";
+	ofstream myFile;
+	myFile.open(fileName, ios::ate | ios::out);
+	if (!myFile.is_open()) {
+		cout << "Open file failure" << endl;
+	}
+	//**********output pts************
+	myFile << "number x y z index"<< endl;
+	//output pts
+	int count = 1;
+	for (unsigned i = 0; i < geoFPtsList.size(); i++) {
+		cFeaturePt* fPt = geoFPtsList[i];
+		vector<double> pt = geoPts3DList[fPt->indx];
+		ostringstream oss;
+		oss << count << " " << pt[0] << " " << pt[1] << " " << pt[2] << " " << fPt->indx;
+		myFile << oss.str() << endl;
+		oss.clear();
+		count++;
+	}
+	//**********output pts************
+	myFile.close();
 }
 
 

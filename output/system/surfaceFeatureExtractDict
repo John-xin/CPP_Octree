@@ -1,0 +1,33 @@
+FoamFile   
+{   
+ version  4.0;
+ format  ascii;
+ class  dictionary;
+ location system; 
+ object  surfaceFeatureExtractDict;
+}   
+
+bldgs.stl
+{
+    extractionMethod        extractFromSurface;
+    extractFromSurfaceCoeffs
+    {
+        includedAngle       150;
+        geometricTestOnly       on;
+    }
+    writeObj        on;
+}
+
+topo_cut.stl
+{
+    extractionMethod        extractFromSurface;
+    extractFromSurfaceCoeffs
+    {
+        includedAngle       120;
+        geometricTestOnly       on;
+    }
+    writeObj        on;
+}
+
+
+

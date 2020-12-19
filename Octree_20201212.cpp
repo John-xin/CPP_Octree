@@ -9,7 +9,7 @@ using namespace std;
 
 int main()
 {
-    const char* fileName = "./etc/simple_bldg.stl";
+    const char* fileName = "./etc/simple_bldg_oneName.stl";
     //const char* fileName ="F:\\Project\\cpluplus\\Eclipse_Proj\\Octree\\Octree\\cube_1m.stl";
     cGeomData* geom = cGeomData::getInstance();
     geom->readSTLData(fileName);
@@ -20,8 +20,9 @@ int main()
     pt3D[1] = 0.5;
     pt3D[2] = 0.1;
     myTree->defineBody(pt3D);
-    //myTree->buildOctree();
-    //myTree->saveAsOFMesh();
+    myTree->buildOctree();
+    myTree->saveAsOFMesh();
+    //myTree->saveFeaturePts();
     ////std::cout<<"NumOfNodes is "<< myTree->countNodes(myTree->root) <<"\n";
     //extern int numOfOrderChanged;
     //cout << "number of order changed is " << numOfOrderChanged << "\n";
