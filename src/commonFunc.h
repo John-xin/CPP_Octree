@@ -18,10 +18,13 @@
 #include <sstream>
 #include <algorithm> // find, sort
 #include <utility>   // pair
+#include <fstream>
 #include "cFeature.h"
+
 
 using namespace std;
 
+class cOctree;
 class cOctNode;
 class cTri;
 class cFeaturePt;
@@ -49,6 +52,8 @@ public:
 	//test program
 	void output_geoFFacesList(vector<cTri*>& geoFFacesList);
 	void output_geoFPtsList(vector<cFeaturePt*>& geoFPtsList, vector<vector<double> >& geoPts3DList);
+	void output_octree(const char* _fileName, cOctree* tree);
+
 };
 
 

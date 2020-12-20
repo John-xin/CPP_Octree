@@ -1,0 +1,10 @@
+id numOfFPts numOfFEdges numOfFFaces mshPtsIndxList mshFaces-nid mshFaces-PtsIndxList
+0 0 0 0 [0,0,0,0,0,0,0,0,] [unAssigned,unAssigned,unAssigned,unAssigned,unAssigned,unAssigned,] [-1,-1,-1,-1,|-1,-1,-1,-1,|-1,-1,-1,-1,|-1,-1,-1,-1,|-1,-1,-1,-1,|-1,-1,-1,-1,|]
+0-0 16 20 904 [0,0,0,0,0,0,0,0,] [unAssigned,unAssigned,unAssigned,unAssigned,unAssigned,unAssigned,] [-1,-1,-1,-1,|-1,-1,-1,-1,|-1,-1,-1,-1,|-1,-1,-1,-1,|-1,-1,-1,-1,|-1,-1,-1,-1,|]
+0-1 20 24 904 [0,0,0,0,0,0,0,0,] [unAssigned,unAssigned,unAssigned,unAssigned,unAssigned,unAssigned,] [-1,-1,-1,-1,|-1,-1,-1,-1,|-1,-1,-1,-1,|-1,-1,-1,-1,|-1,-1,-1,-1,|-1,-1,-1,-1,|]
+0-2 20 24 904 [0,0,0,0,0,0,0,0,] [unAssigned,unAssigned,unAssigned,unAssigned,unAssigned,unAssigned,] [-1,-1,-1,-1,|-1,-1,-1,-1,|-1,-1,-1,-1,|-1,-1,-1,-1,|-1,-1,-1,-1,|-1,-1,-1,-1,|]
+0-3 24 28 904 [0,0,0,0,0,0,0,0,] [unAssigned,unAssigned,unAssigned,unAssigned,unAssigned,unAssigned,] [-1,-1,-1,-1,|-1,-1,-1,-1,|-1,-1,-1,-1,|-1,-1,-1,-1,|-1,-1,-1,-1,|-1,-1,-1,-1,|]
+0-4 12 16 904 [0,0,0,0,0,0,0,0,] [unAssigned,unAssigned,unAssigned,unAssigned,unAssigned,unAssigned,] [-1,-1,-1,-1,|-1,-1,-1,-1,|-1,-1,-1,-1,|-1,-1,-1,-1,|-1,-1,-1,-1,|-1,-1,-1,-1,|]
+0-5 14 18 904 [0,0,0,0,0,0,0,0,] [unAssigned,unAssigned,unAssigned,unAssigned,unAssigned,unAssigned,] [-1,-1,-1,-1,|-1,-1,-1,-1,|-1,-1,-1,-1,|-1,-1,-1,-1,|-1,-1,-1,-1,|-1,-1,-1,-1,|]
+0-6 14 18 904 [0,0,0,0,0,0,0,0,] [unAssigned,unAssigned,unAssigned,unAssigned,unAssigned,unAssigned,] [-1,-1,-1,-1,|-1,-1,-1,-1,|-1,-1,-1,-1,|-1,-1,-1,-1,|-1,-1,-1,-1,|-1,-1,-1,-1,|]
+0-7 16 20 904 [0,0,0,0,0,0,0,0,] [unAssigned,unAssigned,unAssigned,unAssigned,unAssigned,unAssigned,] [-1,-1,-1,-1,|-1,-1,-1,-1,|-1,-1,-1,-1,|-1,-1,-1,-1,|-1,-1,-1,-1,|-1,-1,-1,-1,|]

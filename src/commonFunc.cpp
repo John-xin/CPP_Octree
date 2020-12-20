@@ -5,7 +5,8 @@
  *      Author: WangXJ
  */
 #include "commonFunc.h"
-#include <fstream>
+#include "cOctree.h"
+
 
 
 //++++++++++++++++++++++++++++++++++++++
@@ -118,5 +119,88 @@ void commonFunc::output_geoFPtsList(vector<cFeaturePt*>& geoFPtsList, vector<vec
     //**********output pts************
     myFile.close();
 }
+
+void commonFunc::output_octree(const char* _fileName, cOctree* tree)
+{
+    tree->allNodesList.resize(0);
+    tree->update_allNodesList(&(tree->root));
+
+    ofstream myFile;
+    myFile.open(_fileName, ios::ate | ios::out);
+    if (!myFile.is_open()) {
+        cout << "Open file failure" << endl;
+    }
+    //**********output octree************
+    myFile << "id numOfFPts numOfFEdges numOfFFaces mshPtsIndxList mshFaces-nid mshFaces-PtsIndxList" << endl;
+    //output 
+    for (unsigned i = 0; i < tree->allNodesList.size(); i++) {
+        cOctNode* node = tree->allNodesList[i];
+        string nid = node->nid;
+        int numOfGeoFPts = node->geoFPtsList.size();
+        int numOfGeoFEdges = node->geoFEdgesList.size();
+        int numOfGeoFFaces = node->geoFFacesList.size();
+
+        vector<int> mshPtsIndxList;
+        mshPtsIndxList.resize(8, -1);
+        if (node->mshPtsIndxList.size() != 0) {
+            for (int j = 0; j < node->mshPtsIndxList.size(); j++) {
+                mshPtsIndxList[j]=node->mshPtsIndxList[j];
+            }
+        }
+
+        vector<string> mshFaces_nidList;
+        mshFaces_nidList.resize(6, "-1");
+        for (int j = 0; j < 6; j++) {
+            mshFaces_nidList[j] = node->mshFacesList[j].nid;
+        }
+
+        vector<vector<int>> mshFaces_ptIndxList;
+        mshFaces_ptIndxList.resize(6);
+        for (int j = 0; j < 6; j++) {
+            mshFaces_ptIndxList[j].resize(4);
+            for (int k = 0; k < 4;k++) {
+                mshFaces_ptIndxList[j][k] = -1;
+            }
+        }
+
+        if (node->mshFacesList.size() != 0) {
+            for (int j = 0; j < node->mshFacesList.size(); j++) {
+                if (node->mshFacesList[j].ptsList.size() != 0) {
+                    for (int k = 0; k < node->mshFacesList[j].ptIndxList.size(); k++) {
+                        mshFaces_ptIndxList[j][k] = node->mshFacesList[j].ptIndxList[k];
+                    }
+                } else {
+                    mshFaces_ptIndxList[j].resize(4, 0);
+                }
+            }
+        }
+
+        ostringstream oss;
+        oss << nid << " " << numOfGeoFPts << " " << numOfGeoFEdges << " " << numOfGeoFFaces << " [";
+        for (int j = 0; j < 8; j++) {
+            oss << mshPtsIndxList[j] << ",";
+        }
+        oss << "] [";
+
+        for (int j = 0; j < 6; j++) {
+            oss << mshFaces_nidList[j] << ",";
+        }
+        oss << "] [";
+
+        for (int j = 0; j < 6; j++) {
+            for (int k = 0; k < 4; k++) {
+                oss << mshFaces_ptIndxList[j][k] << ",";
+            }
+            oss << "|";
+        }
+        oss << "]";
+        myFile << oss.str() << endl;
+        oss.clear();
+    }
+    //**********output octree************
+    myFile.close();
+}
+
+
 
 

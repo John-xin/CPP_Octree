@@ -69,7 +69,7 @@ public:
     int num_mshBFaces, num_mshIntlFaces;
     //vector<int> eleVolList;
     
-
+    vector<cOctNode*> allNodesList;
     vector<cOctNode*> bNodesList;
     vector<cOctNode*> nonBNodesList;
     vector<cOctNode*> leafNodesList;
@@ -127,6 +127,7 @@ public:
     void splitNodeByLevelDiff(int lvlDiff,cOctNode *node);
     void splitNodeById(string node_id);
     void splitExtNodeNbr(cOctNode* node);
+    void update_allNodesList(cOctNode* node);
     void splitNodeByPhyName(string phyName, int level, cOctNode* node);
     void setup_boundaryNode(cOctNode* node);
     void setup_interiorNode(cOctNode* node);

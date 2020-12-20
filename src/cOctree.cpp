@@ -213,19 +213,23 @@ void cOctree::buildOctree() {
 
     //2. +++++++++++++++++++++++++++
 	std::cout << "Min Octree Level is " << MIN_OCTREE_LEVELS << "\n";
+	std::cout << "Max FeatPt in node is " << MAX_OCTNODE_FEATS << "\n\n";
+
     splitOctreeByMinLevel(&root);
     //std::cout << "After splitOctreeByMinLevel " << "\n";
     //outputNodeName(&root);
-
-	std::cout<<"Max FeatPt in node is "<< MAX_OCTNODE_FEATS<<"\n\n";
+	commonFunc::getInstance()->output_octree("./output/byMinLevel_octree.txt",this);
+	
     splitOctreeByFeaturePt(&root);
+	commonFunc::getInstance()->output_octree("./output/byFeaturePt_octree.txt", this);
     //splitNodeByPhyName("bldg",6,&root);
     //splitNodeById("0-0");
     //std::cout << "After splitOctreeByFeaturePt " << "\n";
     //outputNodeName(&root);
     getOctreeDepth(&root);
     balanceOctree(&root);
-   
+	commonFunc::getInstance()->output_octree("./output/balanced_octree.txt", this);
+
 	//3. identify boundary / interior / exterior node +++++++++++++++++++++++++++
 	//find boundary node if it includes geoFFaces
 	setup_boundaryNode(&root); //leaf nodes -> identify boundary / non-boundary node
@@ -242,6 +246,7 @@ void cOctree::buildOctree() {
 	setup_leafNodesNbr();//n*logN - set nbrs for all leafNodes
 
     delExtNodes();
+	commonFunc::getInstance()->output_octree("./output/delExtNodes_octree.txt", this);
     //std::cout<<"bNodesList length is "<< bNodesList.size() <<"\n";
     //std::cout<<"nonBNodesList length is "<< nonBNodesList.size() <<"\n";
 
@@ -250,12 +255,13 @@ void cOctree::buildOctree() {
     //from leaf nodes -> identify non-repeated mshPt
     setup_mshPtList();
     cout<<"num of mshPts is "<< mshPtsList.size() <<"\n";
+	commonFunc::getInstance()->output_octree("./output/setup_mshPts_octree.txt", this);
     //outputMshPts(root);
     //from leaf nodes -> define node -> 6 faces by mshPt index
     //init mshFace -> own, nid, low, upp, ptIndxList
     //and mark mshVolIndx
     setup_nodeMshFaces();
-
+	commonFunc::getInstance()->output_octree("./output/setup_mshFaces_octree.txt", this);
     //5. from boundary / interior node -> identify internal / boundary mshFace +++++++++++++++++++++++++++
     //update own, nei, ptIndxList
     setup_boundaryMshFace();
@@ -553,6 +559,15 @@ void cOctree::splitExtNodeNbr(cOctNode* node) {
 	else {
 		for (unsigned int i = 0; i < node->children.size(); i++) {
 			splitExtNodeNbr(node->children[i]);
+		}
+	}
+}
+void cOctree::update_allNodesList(cOctNode* node)
+{
+	allNodesList.push_back(node);
+	if (node->children.size() != 0) {
+		for (int i = 0; i < node->children.size(); i++) {
+			update_allNodesList(node->children[i]);
 		}
 	}
 }
@@ -1006,6 +1021,7 @@ void cOctree::setup_nodeMshFaces() {
 
 	for(unsigned i=0;i<leafNodesList.size();i++){
     	//mark mshVolIndx to all leaf node
+
     	if(leafNodesList[i]!= NULL){
         	leafNodesList[i]->mshVolIndx=mshVolIndxCount;
         	leafNodesList[i]->updateMshFaces_mshVolIndx(mshVolIndxCount);//mark all node's mshFaces
