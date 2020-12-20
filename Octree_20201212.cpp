@@ -4,6 +4,7 @@
 #include <iostream>
 #include "src/cGeomData.h"
 #include "src/cOctree.h"
+#include "src/commonFunc.h"
 
 using namespace std;
 
@@ -12,6 +13,7 @@ int main()
     const char* fileName = "./etc/simple_bldg_oneName.stl";
     //const char* fileName ="F:\\Project\\cpluplus\\Eclipse_Proj\\Octree\\Octree\\cube_1m.stl";
     cGeomData* geom = cGeomData::getInstance();
+    commonFunc* commonFunc = commonFunc::getInstance();
     geom->readSTLData(fileName);
   
     cOctree* myTree = new cOctree();
@@ -22,7 +24,7 @@ int main()
     myTree->defineBody(pt3D);
     myTree->buildOctree();
     myTree->saveAsOFMesh();
-    //myTree->saveFeaturePts();
+    //commonFunc->output_geoFPtsList(myTree->geoFPtsList, myTree->geoPts3DList);
     ////std::cout<<"NumOfNodes is "<< myTree->countNodes(myTree->root) <<"\n";
     //extern int numOfOrderChanged;
     //cout << "number of order changed is " << numOfOrderChanged << "\n";

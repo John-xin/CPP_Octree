@@ -37,15 +37,17 @@ public:
       
     double size; //node cube length
     int level;
+    int depth;
     string nid;
     vector<double> position; //assigned from constructor
-    vector<cOctNode> branches;
+    vector<cOctNode*> children;
     cOctNode* parent;
-    vector<vector<cOctNode*>> nbr;
+    vector<vector<cOctNode*>> nbrsList; //0-s 1-e 2-n 3-w 4-t 5-b
 
     vector<double> low, upp;
     int mshVolIndx;
-    int state;//0-boundary node ; -1 - exterior node; 1 - internal node
+    int isBoundaryNode;//1 - boundary node; 0 - non-boundary node;
+    int isInteriorNode;//1 - interior node; 0 - exterior node;
 
     vector<cTri*> geoFFacesList; //geom feature faces list
     vector<cFeaturePt*> geoFPtsList; //geom feature pts list

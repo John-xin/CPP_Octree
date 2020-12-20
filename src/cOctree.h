@@ -35,10 +35,11 @@ using namespace std;
 class cOctree {
 public:
 
-    static const int MAX_OCTREE_LEVELS = 4;
-    static const int MIN_OCTREE_LEVELS = 2;
+    static const int MAX_OCTREE_LEVELS = 3;
+    static const int MIN_OCTREE_LEVELS = 1;
     static const int MAX_OCTNODE_FEATS = 2;
     int branchOffsets[8][3];
+    int depth;
     cOctNode root;
 
     //octree setup depends on geomData - run geomData read STL first
@@ -79,13 +80,13 @@ public:
 
     cOctree();
     ~cOctree();
-    int countAllNodes(cOctNode &node);
-    int countIntlNodes(cOctNode &node);
-    int countExtNodes(cOctNode &node);
-    int countBNodes(cOctNode &node);
-    void outputNodeName(cOctNode &node);
-    void outputMshPts(cOctNode &node);
-    void outputMshFaces(cOctNode &node);
+    int countAllNodes(cOctNode *node);
+    int countIntlNodes(cOctNode *node);
+    int countExtNodes(cOctNode *node);
+    int countBNodes(cOctNode *node);
+    void outputNodeName(cOctNode *node);
+    void outputMshPts(cOctNode *node);
+    void outputMshFaces(cOctNode *node);
 
 
     void defineBody(vector<double> _ptInGeom);
@@ -94,17 +95,17 @@ public:
     void setup_root();
     double getSizeRoot();//get length of root cube
     vector<double> getPositionRoot();//find low/upp of geom -> get root cube center position
-
-    vector<cOctNode*> getLeafNodeByPt(vector<double> pt, cOctNode& node);
-    void addLeafNodeByPt(vector<double> pt,cOctNode& node);
+    vector<double> setCustomPosition(double x,double y,double z);
+    vector<cOctNode*> getLeafNodeByPt(vector<double> pt, cOctNode* node);
+    void addLeafNodeByPt(vector<double> pt,cOctNode* node);
     cOctNode* getNodeFromId(string nodeId);
-    cOctNode* findBranchById(string nodeId, cOctNode &node);
-    void findBranchesByLabel(int polyLabel, cOctNode &node, vector<cOctNode*> &nodeList);
+    cOctNode* findBranchById(string nodeId, cOctNode *node);
+    //void findBranchesByLabel(int polyLabel, cOctNode &node, vector<cOctNode*> &nodeList);
 
     vector<Intersection> findRayIntersect(cLine &ray);
     set<int> getListPolysToCheck(cLine &ray);
-    void getPolysToCheck(cOctNode &node, cLine &ray, set<int> &intTestPolys);
-    void getNodesToCheck(cOctNode &node, cLine &ray, vector<pair<cOctNode*,double> > &nodeList);
+    void getPolysToCheck(cOctNode *node, cLine &ray, set<int> &intTestPolys);
+    //void getNodesToCheck(cOctNode &node, cLine &ray, vector<pair<cOctNode*,double> > &nodeList);
     vector<int> findRayIntersects(vector<cLine> &rayList);
     vector<int> findRayIntersectsSorted(vector<cLine> &rayList);		
     vector<cOctNode*> getNodesFromLabel(int polyLabel);	
@@ -116,17 +117,28 @@ public:
     void setup_geoFEdgesList();
     int numFFaces();
 
-
-    void splitNodeByMinLevel(cOctNode &node);
-    void splitOctreeByMinLevel(cOctNode &node);
-    void splitNodeByFeaturePt(cOctNode &node);
-    void splitOctreeByFeaturePt(cOctNode &node);
+    void splitNode(cOctNode* node);
+    void splitNodeByLevel(int level, cOctNode *node);
+    void splitOctreeByMinLevel(cOctNode *node);
+    void splitNodeByFeaturePt(cOctNode *node);
+    void splitOctreeByFeaturePt(cOctNode *node);
+    void getOctreeDepth(cOctNode *node);
+    void balanceOctree(cOctNode *node);
+    void splitNodeByLevelDiff(int lvlDiff,cOctNode *node);
     void splitNodeById(string node_id);
+    void splitExtNodeNbr(cOctNode* node);
+    void splitNodeByPhyName(string phyName, int level, cOctNode* node);
+    void setup_boundaryNode(cOctNode* node);
+    void setup_interiorNode(cOctNode* node);
+    int isInteriorNode(cOctNode* node);
+    void setup_nbrNodesState(cOctNode* node);
+
     void setup_leafNodesList(cOctNode* node);
     void setup_leafNodesNbr();
+    void setLeafNodeNbr(cOctNode* node);
+    void delExtNodes();
+    void delExtNodes2(cOctNode* &node);
 
-
-    void delExtNodes(cOctNode &node);
     void addGapNodes();
 
     void setup_mshPtList();
@@ -134,13 +146,8 @@ public:
     bool isPtSame(vector<double>& pt1, vector<double>& pt2);
     void setup_nodeMshFaces();
 
-    void setup_bNodesList(cOctNode* node);
-    void findBNode(cOctNode* node);
-    void findNodeState(cOctNode* node);
-    void setup_nodesState();
-    void setup_nbrNodesState(cOctNode* node);
-
-    void setup_mshFaceList();
+    void setup_boundaryMshFace();
+    void setup_intlMshFace();
     void findMshIntlFaces();
     void put2List(int flag,cFace* currentMshFace,cFace* listMshFace);
 
@@ -155,9 +162,6 @@ public:
     void saveAsOFMeshNeis();
     void saveAsOFMeshOwns();
     void saveAsOFMeshBds();
-
-    void saveFeaturePts();
-
 };
 
 //vector<cTri> geoFFacesList; //geom feature faces list

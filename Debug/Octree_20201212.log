@@ -1,3 +1,6 @@
 ﻿C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v160\Microsoft.CppBuild.targets(491,5): warning MSB8028: The intermediate directory (Debug\) contains files shared from another project (Octree_20201212.vcxproj).  This can lead to incorrect clean and rebuild behavior.
   Octree_20201212.cpp
+  cOctNode.cpp
+  cOctree.cpp
+  Generating Code...
   Octree_20201212.vcxproj -> E:\PB\Code\CPP_Octree\Debug\Octree.exe

@@ -8,9 +8,11 @@ cOctNode::cOctNode()
 {
     // Default octNode constructor
     level = 0;
+    depth = 1;
     nid   = "";
     size  = 1.0;
-    state=-100;
+    isBoundaryNode=-100;
+    isInteriorNode=-100;
     parent=NULL;
     position.resize(3,0.0);
     getLowUppVerts();
@@ -26,18 +28,20 @@ cOctNode::cOctNode(int _level, string _nid, vector<double> _position, double _si
 {
     // octNode constructor with level, node id (nid), position and size
     level    = _level;
+    depth = 1;
     nid      = _nid;
     position = _position;
     size     = _size;
     mshVolIndx = -100;
-    state=-100;
+    isBoundaryNode=-100;
+    isInteriorNode=-100;
     parent=_parent;
     geoFPtsList=_geoFPtsList;
     geoFEdgesList=_geoFEdgesList;
     geoFFacesList=_geoFFacesList;
     getLowUppVerts();
     mshPtsRepeatedList.resize(8);
-    mshPtsIndxList.resize(8,0);
+    mshPtsIndxList.resize(8);
     mshFacesList.resize(6);
 
     calMshPts3D();//based on getLowUppVerts();
@@ -55,7 +59,7 @@ bool cOctNode::isLeafNode()
 {
     // Checks if cOctNode is a leaf node by counting the number of branches. A
     // leaf node has no branches
-    return branches.size()==0;
+    return children.size()==0;
 }
 
 void cOctNode::getLowUppVerts()
@@ -115,8 +119,8 @@ void cOctNode::addNode(int _level, string _nid, vector<double> _position, double
 						vector<cTri*> _geoFFacesList,
 						cOctNode* _parent)
 {
-    branches.push_back(
-    		cOctNode(_level, _nid, _position, _size, _geoFPtsList, _geoFEdgesList, _geoFFacesList, _parent)
+    children.push_back(
+    		new cOctNode(_level, _nid, _position, _size, _geoFPtsList, _geoFEdgesList, _geoFFacesList, _parent)
     		);
 }
 
@@ -304,8 +308,8 @@ void cOctNode::removeExtraFeats() {
 //	cFeaturePt *fPt;
 //	cFeatureEdge *fEdge;
 //	cTri *fTri;
-    
-    //use a tmpList to keep the elems in the node and replace geoFPtsList by tmpList
+
+   //use a tmpList to keep the elems in the node and replace geoFPtsList by tmpList
     //remove feature point
     vector <cFeaturePt*> tmpGeoFPtsList;
     for (vector <cFeaturePt*>::iterator it = geoFPtsList.begin(); it != geoFPtsList.end(); it++) {

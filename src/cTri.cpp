@@ -15,6 +15,8 @@ cTri::cTri()
     // Default cTri constructor
     indx = 0;
     pts3D_db3.resize(3);
+    phyName = "unAssigned";
+    phyNameIndx = -100;
     for (vector<vector<double> >::iterator it=pts3D_db3.begin(); it!=pts3D_db3.end(); ++it)
         (*it).resize(3,0.0);
     pts3D_db3[1][0]=1.0; pts3D_db3[2][1]=1.0;
@@ -29,6 +31,8 @@ cTri::cTri(int _indx, vector<vector<double> > _pts3D_db3)
     // cTri constructor with label and pts3D
     indx    = _indx;
     pts3D_db3 = _pts3D_db3;
+    phyName = "unAssigned";
+    phyNameIndx = -100;
     getN();
     getD();
     getLowerVert();

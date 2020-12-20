@@ -18,10 +18,13 @@
 #include <sstream>
 #include <algorithm> // find, sort
 #include <utility>   // pair
+#include "cFeature.h"
 
 using namespace std;
 
 class cOctNode;
+class cTri;
+class cFeaturePt;
 
 // Function prototypes
 
@@ -42,6 +45,10 @@ public:
 	vector<double> crossProduct( vector<double> &v1, vector<double> &v2 );
 
 	//static commonFunc* theCommonFunc;
+
+	//test program
+	void output_geoFFacesList(vector<cTri*>& geoFFacesList);
+	void output_geoFPtsList(vector<cFeaturePt*>& geoFPtsList, vector<vector<double> >& geoPts3DList);
 };
 
 

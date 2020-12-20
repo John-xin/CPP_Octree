@@ -43,7 +43,7 @@ public:
     vector<double> low;
     vector<double> upp;
     int mshVolIndx;
-    int state; //0-boundary face ; 1 - internal face
+    int isBoundaryFace; //1-boundary face ; 0 - internal face
     cOctNode* node;
 
     void getN();

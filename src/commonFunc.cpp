@@ -5,6 +5,8 @@
  *      Author: WangXJ
  */
 #include "commonFunc.h"
+#include <fstream>
+
 
 //++++++++++++++++++++++++++++++++++++++
 double commonFunc::dotProduct(vector<double> &v1, vector<double> &v2)
@@ -51,6 +53,7 @@ vector<double> commonFunc::crossProduct(vector<double> &v1, vector<double> &v2)
     return cp;
 }
 
+
 vector<double> commonFunc::vectAdd( vector<double> &a, vector<double> &b )
 {
     // Vector addition, c=a+b
@@ -91,5 +94,29 @@ bool commonFunc::sortNodes(const pair<cOctNode*,double>&i, const pair<cOctNode*,
     return i.second < j.second;
 }
 
+void commonFunc::output_geoFPtsList(vector<cFeaturePt*>& geoFPtsList, vector<vector<double> >& geoPts3DList)
+{
+    string fileName = "./output/featruePts.txt";
+    ofstream myFile;
+    myFile.open(fileName, ios::ate | ios::out);
+    if (!myFile.is_open()) {
+        cout << "Open file failure" << endl;
+    }
+    //**********output pts************
+    myFile << "number x y z index" << endl;
+    //output pts
+    int count = 1;
+    for (unsigned i = 0; i < geoFPtsList.size(); i++) {
+        cFeaturePt* fPt = geoFPtsList[i];
+        vector<double> pt = geoPts3DList[fPt->indx];
+        ostringstream oss;
+        oss << count << " " << pt[0] << " " << pt[1] << " " << pt[2] << " " << fPt->indx;
+        myFile << oss.str() << endl;
+        oss.clear();
+        count++;
+    }
+    //**********output pts************
+    myFile.close();
+}
 
 

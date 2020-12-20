@@ -19,7 +19,7 @@ cFace::cFace()
     phyName = "unAssigned";
     phyNameIndx=-100;
     mshVolIndx = -100;
-    state=-100;
+    isBoundaryFace=-100;
     node=NULL;
 
 }

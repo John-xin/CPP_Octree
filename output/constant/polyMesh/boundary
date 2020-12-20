@@ -12,15 +12,15 @@ FoamFile
 	OBJECT
 	{
 		type    unAssigned;
-		nFaces    322;
-		startFace    138;
+		nFaces    0;
+		startFace    0;
 	}
 
 	unAssigned
 	{
 		type    unAssigned;
 		nFaces    0;
-		startFace    460;
+		startFace    0;
 	}
 
 )
