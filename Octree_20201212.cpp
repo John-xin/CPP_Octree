@@ -2,28 +2,27 @@
 //
 
 #include <iostream>
-#include "src/cGeomData.h"
-#include "src/cOctree.h"
-#include "src/commonFunc.h"
+#include <vector>
+#include "src/cOctreeApp.h"
+
 
 using namespace std;
 
 int main()
 {
-    const char* fileName = "./etc/simple_bldg_oneName.stl";
-    //const char* fileName ="F:\\Project\\cpluplus\\Eclipse_Proj\\Octree\\Octree\\cube_1m.stl";
-    cGeomData* geom = cGeomData::getInstance();
-    commonFunc* commonFunc = commonFunc::getInstance();
-    geom->readSTLData(fileName);
-  
-    cOctree* myTree = new cOctree();
-    vector<double> pt3D(3);
-    pt3D[0] = 0.15;
-    pt3D[1] = 0.5;
-    pt3D[2] = 0.1;
-    myTree->defineBody(pt3D);
-    myTree->buildOctree();
-    myTree->saveAsOFMesh();
+    const char* fileName = "./etc/simple_bldg_oneName.stl"; //or const char* fileName ="F:\\Project\\cpluplus\\Eclipse_Proj\\Octree\\Octree\\cube_1m.stl";  
+ 
+    cOctreeApp* app = new cOctreeApp();
+
+    //+++++++ cGeomData geom is initialized +++++++++++++
+    app->geom->readSTLData(fileName);
+    app->geom->extractFeature();
+    vector<double> pt3D{ 0.15,0.5,0.1 };
+    app->defineBody(pt3D);
+    //+++++++ cGeomData geom is initialized +++++++++++++
+
+    app->buildOctree();
+    app->saveAsOFMesh();
     //commonFunc->output_geoFPtsList(myTree->geoFPtsList, myTree->geoPts3DList);
     ////std::cout<<"NumOfNodes is "<< myTree->countNodes(myTree->root) <<"\n";
     //extern int numOfOrderChanged;

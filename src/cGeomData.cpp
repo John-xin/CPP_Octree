@@ -6,6 +6,7 @@
  */
 
 #include "cGeomData.h"
+#include "cfeature.h"
 #include <math.h>
 
 //++++++++++++ utility functions
@@ -35,9 +36,14 @@ return num;
 
 cGeomData::cGeomData()
 {
-	numOfTris=0;
-	numOfPts=0;
+	numOfTris=-1;
+	numOfPts=-1;
 	numOfPhyNames=-1;
+
+    numOfGeoFFaces = -1;
+    numOfGeoFEdges = -1;
+    numOfGeoFPts = -1;
+
 	//vertCoords3D=NULL;
 	//triLabelMtx=NULL;
 }
@@ -139,8 +145,8 @@ void cGeomData::readSTLData(const char* _fileName)
   numOfTris=trisList.size();
   numOfPts=pts3DList.size();
   numOfPhyNames=phyNamesList.size();
-  getLowUppVerts();
 
+  getLowUppVerts();
   output2Console();
 }
 
@@ -195,3 +201,82 @@ void cGeomData::output2Console() {
 	cout << "Number of STL SolidNames is " << numOfPhyNames  << "\n";
 	cout << "\n";
 }
+
+// ++++++ setup feature list +++++++++++++++++++
+void cGeomData::setup_geoFFacesList()
+{
+    vector<int> geoPtIndx_int3(3);
+    int phyNameIndx;
+    int geoFFaceIndx;
+    geoFFacesList.reserve(numOfTris);
+    for (int i=0; i< numOfTris; i++) {
+        geoPtIndx_int3[0]= trisList[i][0];
+        geoPtIndx_int3[1]= trisList[i][1];
+        geoPtIndx_int3[2]= trisList[i][2];
+        phyNameIndx= trisList[i][3];
+        geoFFaceIndx=i;
+        cFeatureFace* fFace=new cFeatureFace(geoFFaceIndx,phyNameIndx,geoPtIndx_int3);
+        //if(fFace->indx==1060 ||fFace->indx==1061){cout<<"";} connect at two FFaces intersection line
+        geoFFacesList.push_back(fFace);
+    }
+    std::cout<<"number of geoFFaces is " <<geoFFacesList.size()<<"\n";
+}
+
+void cGeomData::setup_geoFEdgesList()
+{
+    vector<int> geoPtIndx_int2;
+    int geoFEdgeIndx=0;
+    cFeatureFace* surface1;
+	cFeatureFace* surface2;
+
+    unsigned int numOfSurfaces=geoFFacesList.size();
+    int k=0;
+    //this needs to be optimized - cost too much time
+    for (unsigned int i=0; i<numOfSurfaces; i++) {
+        for (unsigned int j=k; j<numOfSurfaces; j++) {
+            surface1=geoFFacesList[i];
+            surface2=geoFFacesList[j];
+            if (i!=j) {
+                if (surface1->isAdjacent(surface2)) {
+                    if (surface1->getAngle(surface2) < 170) {
+                        geoPtIndx_int2 = surface1->getAdjacentEdge(surface2);
+                        cFeatureEdge* fEdge=new cFeatureEdge(geoFEdgeIndx, geoPtIndx_int2);
+                        geoFEdgesList.push_back(fEdge);
+                        geoFEdgeIndx = geoFEdgeIndx + 1;
+                    }
+                }
+            }
+
+        }
+        k=k+1;
+    }
+    std::cout<<"number of feature edges is " <<geoFEdgesList.size()<<"\n";
+}
+
+void cGeomData::setup_geoFPtsList()
+{
+
+    for (unsigned int i=0; i<geoFEdgesList.size(); i++) {
+    	for (int j=0; j<2; j++) {
+    		cFeaturePt* fPt=new cFeaturePt();
+    		fPt->indx=geoFEdgesList[i]->ptIndx_int2[j];
+    		if(fPt->isNewInList(geoFPtsList)){
+    			geoFPtsList.push_back(new cFeaturePt(fPt->indx));
+    		}
+        }
+    }
+    std::cout<<"number of feature points is " <<geoFPtsList.size()<<"\n";
+}
+
+void cGeomData::extractFeature()
+{
+    //extract features from geom data
+    setup_geoFFacesList(); //first step
+    setup_geoFEdgesList(); //find feature edge from setup_geoFFacesList
+    setup_geoFPtsList();  //find feature point from setup_geoFEdgesList
+
+    numOfGeoFFaces = geoFFacesList.size();
+    numOfGeoFEdges = geoFEdgesList.size();
+    numOfGeoFPts = geoFPtsList.size();
+}
+// ++++++ setup feature list ++++++++++++++++++++++++++

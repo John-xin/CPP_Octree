@@ -16,17 +16,6 @@
 
 cOctree::cOctree()
 {
-	//octree setup depends on geomData - run geomData read STL first
-    numOfGeoPts=cGeomData::getInstance()->numOfPts;
-    numOfGeoTris=cGeomData::getInstance()->numOfTris;
-    numOfGeoPhyNames=cGeomData::getInstance()->numOfPhyNames;
-    ptInGeom.resize(3);
-
-    //extract features from geom data
-    setup_geoFFacesList(); //first step
-    setup_geoFEdgesList(); //find feature edge from setup_geoFFacesList
-    setup_geoFPtsList();  //find feature point from setup_geoFEdgesList
-    cout<<"\n";
     //++++++++++++++++++++++++++++++++++++++
     int _offsets[][3] = {{-1,-1,-1},{+1,-1,-1},{-1,+1,-1},{+1,+1,-1},
                          {-1,-1,+1},{+1,-1,+1},{-1,+1,+1},{+1,+1,+1}};
@@ -38,13 +27,13 @@ cOctree::cOctree()
     }
 
     depth=0;
-    //buildOctree();
-    //saveAsOFMesh();
+
 }
 cOctree::~cOctree()
 {
     cout << "Destroying the cOctree" << endl;
 }
+
 int cOctree::countAllNodes(cOctNode* node)
 {
     int numOfNodes = 0;
@@ -63,6 +52,7 @@ int cOctree::countAllNodes(cOctNode* node)
 
     }
 }
+
 int cOctree::countIntlNodes(cOctNode* node) {
     int numOfNodes = 0;
     for(unsigned i=0; i<leafNodesList.size();i++){
@@ -72,6 +62,7 @@ int cOctree::countIntlNodes(cOctNode* node) {
     }
     return numOfNodes;
 }
+
 int cOctree::countBNodes(cOctNode* node) {
     int numOfNodes = 0;
     for(unsigned i=0; i<leafNodesList.size();i++){
@@ -81,6 +72,20 @@ int cOctree::countBNodes(cOctNode* node) {
     }
     return numOfNodes;
 }
+
+void cOctree::showOctreeNodes()
+{
+	num_allNodes = countAllNodes(&root);
+	num_intlNodes = countIntlNodes(&root);
+	num_extNodes = countExtNodes(&root);
+	num_bNodes = countBNodes(&root);
+	std::cout << "num of Nodes(root->all leaves) is " << num_allNodes << "\n";
+	std::cout << "num of leaf Nodes is " << leafNodesList.size() << "\n";
+	std::cout << "num of Interior Nodes is " << num_intlNodes << "\n";
+	std::cout << "num of Exterior Nodes is " << num_extNodes << "\n";
+	std::cout << "num of Boundary Nodes is " << num_bNodes << "\n\n";
+}
+
 int cOctree::countExtNodes(cOctNode* node) {
     int numOfNodes = 0;
     for(unsigned i=0; i<leafNodesList.size();i++){
@@ -90,6 +95,7 @@ int cOctree::countExtNodes(cOctNode* node) {
     }
     return numOfNodes;
 }
+
 void cOctree::outputNodeName(cOctNode* node) {
 	    if (node->isLeafNode()) {
 	    	cout<< node->nid.c_str() <<"\n";
@@ -100,6 +106,7 @@ void cOctree::outputNodeName(cOctNode* node) {
 	        }
 	    }
 }
+
 void cOctree::outputMshPts(cOctNode* node) {
     vector<int> ptIndxList;
 	if (node->isLeafNode()) {
@@ -113,6 +120,7 @@ void cOctree::outputMshPts(cOctNode* node) {
         }
     }
 }
+
 void cOctree::outputMshFaces(cOctNode* node) {
     vector<cFace> faceList;
     cFace face;
@@ -132,165 +140,12 @@ void cOctree::outputMshFaces(cOctNode* node) {
     }
 }
 
-// ++++++ setup feature list
-void cOctree::setup_geoFFacesList()
-{
-    vector<int> geoPtIndx_int3(3);
-    int phyNameIndx;
-    int geoFFaceIndx;
-    geoFFacesList.reserve(numOfGeoTris);
-    for (int i=0; i<numOfGeoTris; i++) {
-        geoPtIndx_int3[0]=geoTrisList[i][0];
-        geoPtIndx_int3[1]=geoTrisList[i][1];
-        geoPtIndx_int3[2]=geoTrisList[i][2];
-        phyNameIndx=geoTrisList[i][3];
-        geoFFaceIndx=i;
-        cTri* fFace=new cTri(geoFFaceIndx,phyNameIndx,geoPtIndx_int3);
-        //if(fFace->indx==1060 ||fFace->indx==1061){cout<<"";} connect at two FFaces intersection line
-        geoFFacesList.push_back(fFace);
-    }
-    std::cout<<"number of geoFFaces is " <<geoFFacesList.size()<<"\n";
-}
-void cOctree::setup_geoFEdgesList()
-{
-    vector<int> geoPtIndx_int2;
-    int geoFEdgeIndx=0;
-    cTri* surface1;
-	cTri* surface2;
-
-    unsigned int numOfSurfaces=geoFFacesList.size();
-    int k=0;
-    //this needs to be optimized - cost too much time
-    for (unsigned int i=0; i<numOfSurfaces; i++) {
-        for (unsigned int j=k; j<numOfSurfaces; j++) {
-            surface1=geoFFacesList[i];
-            surface2=geoFFacesList[j];
-            if (i!=j) {
-                if (surface1->isAdjacent(surface2)) {
-                    if (surface1->getAngle(surface2) < 170) {
-                        geoPtIndx_int2 = surface1->getAdjacentEdge(surface2);
-                        cFeatureEdge* fEdge=new cFeatureEdge(geoFEdgeIndx, geoPtIndx_int2);
-                        geoFEdgesList.push_back(fEdge);
-                        geoFEdgeIndx = geoFEdgeIndx + 1;
-                    }
-                }
-            }
-
-        }
-        k=k+1;
-    }
-    std::cout<<"number of feature edges is " <<geoFEdgesList.size()<<"\n";
-}
-void cOctree::setup_geoFPtsList()
-{
-
-    for (unsigned int i=0; i<geoFEdgesList.size(); i++) {
-    	for (int j=0; j<2; j++) {
-    		cFeaturePt* fPt=new cFeaturePt();
-    		fPt->indx=geoFEdgesList[i]->ptIndx_int2[j];
-    		if(fPt->isNewInList(geoFPtsList)){
-    			geoFPtsList.push_back(new cFeaturePt(fPt->indx));
-    		}
-        }
-    }
-    std::cout<<"number of feature points is " <<geoFPtsList.size()<<"\n";
-}
-int cOctree::numFFaces() { return (int)(geoFFacesList.size()); }
-// ++++++ setup feature list
-
-void cOctree::defineBody(vector<double> _ptInGeom) {
-	if (_ptInGeom.size()!=3){
-		cout<<"Must give a pt3D to define body"<<"\n";
-	}else{
-		ptInGeom=_ptInGeom;
-	}
-
-}
-
-void cOctree::buildOctree() {
-    //1. init root node
-    setup_root();
-
-    //2. +++++++++++++++++++++++++++
-	std::cout << "Min Octree Level is " << MIN_OCTREE_LEVELS << "\n";
-	std::cout << "Max FeatPt in node is " << MAX_OCTNODE_FEATS << "\n\n";
-
-    splitOctreeByMinLevel(&root);
-    //std::cout << "After splitOctreeByMinLevel " << "\n";
-    //outputNodeName(&root);
-	commonFunc::getInstance()->output_octree("./output/byMinLevel_octree.txt",this);
-	
-    splitOctreeByFeaturePt(&root);
-	commonFunc::getInstance()->output_octree("./output/byFeaturePt_octree.txt", this);
-    //splitNodeByPhyName("bldg",6,&root);
-    //splitNodeById("0-0");
-    //std::cout << "After splitOctreeByFeaturePt " << "\n";
-    //outputNodeName(&root);
-    getOctreeDepth(&root);
-    balanceOctree(&root);
-	commonFunc::getInstance()->output_octree("./output/balanced_octree.txt", this);
-
-	//3. identify boundary / interior / exterior node +++++++++++++++++++++++++++
-	//find boundary node if it includes geoFFaces
-	setup_boundaryNode(&root); //leaf nodes -> identify boundary / non-boundary node
-	//closed STL -> node center - defined body pt -> ray -> intersections 
-	setup_interiorNode(&root); //non-boundary node -> identify interior / exterior node
-
-	//split nbrs fo extNode to same level as extNode
-
-    splitExtNodeNbr(&root);
-	setup_boundaryNode(&root);
-	setup_interiorNode(&root);
-
-	setup_leafNodesList(&root);
-	setup_leafNodesNbr();//n*logN - set nbrs for all leafNodes
-
-    delExtNodes();
-	commonFunc::getInstance()->output_octree("./output/delExtNodes_octree.txt", this);
-    //std::cout<<"bNodesList length is "<< bNodesList.size() <<"\n";
-    //std::cout<<"nonBNodesList length is "<< nonBNodesList.size() <<"\n";
-
-
-    //4. +++++++++++++++++++++++++++
-    //from leaf nodes -> identify non-repeated mshPt
-    setup_mshPtList();
-    cout<<"num of mshPts is "<< mshPtsList.size() <<"\n";
-	commonFunc::getInstance()->output_octree("./output/setup_mshPts_octree.txt", this);
-    //outputMshPts(root);
-    //from leaf nodes -> define node -> 6 faces by mshPt index
-    //init mshFace -> own, nid, low, upp, ptIndxList
-    //and mark mshVolIndx
-    setup_nodeMshFaces();
-	commonFunc::getInstance()->output_octree("./output/setup_mshFaces_octree.txt", this);
-    //5. from boundary / interior node -> identify internal / boundary mshFace +++++++++++++++++++++++++++
-    //update own, nei, ptIndxList
-    setup_boundaryMshFace();
-    setup_intlMshFace();
-    std::cout<<"mshIntlFacesList length is "<< mshIntlFacesList.size() <<"\n";
-    std::cout<<"mshBFacesList length is "<< mshBFacesList.size() <<"\n\n";
-    //outputMshFaces(root);
-    //6. from boundary mshFace -> identify phyName of boundary mshFace +++++++++++++++++++++++++++
-    setup_nodePhyName();
-    setup_mshBdsList();
-
-    //
-    num_allNodes=countAllNodes(&root);
-    num_intlNodes=countIntlNodes(&root);
-    num_extNodes=countExtNodes(&root);
-    num_bNodes=countBNodes(&root);
-    std::cout<<"num of Nodes(root->all leaves) is "<< num_allNodes <<"\n";
-    std::cout<<"num of leaf Nodes is "<< leafNodesList.size() <<"\n";
-    std::cout<<"num of Interior Nodes is "<< num_intlNodes <<"\n";
-    std::cout<<"num of Exterior Nodes is "<< num_extNodes <<"\n";
-    std::cout<<"num of Boundary Nodes is "<< num_bNodes <<"\n\n";
-}
-
 // +++++ setup root
 void cOctree::setup_root() {
     vector<double> position = getPositionRoot();
 	//vector<double> position = setCustomPosition(3,3,63);
     double size = getSizeRoot();
-    root = cOctNode(0,"0", position, size,geoFPtsList,geoFEdgesList,geoFFacesList, NULL);
+    root = cOctNode(0,"0", position, size, cGeomData::getInstance()->geoFPtsList, cGeomData::getInstance()->geoFEdgesList, cGeomData::getInstance()->geoFFacesList, NULL);
 }
 double cOctree::getSizeRoot() {
 
@@ -510,7 +365,7 @@ int cOctree::isInteriorNode(cOctNode* node) {
 	//odd -> intl node
 
 	vector<Intersection> intersections;
-	cLine ray(node->position,ptInGeom,0);
+	cLine ray(node->position, cGeomData::getInstance()->ptInGeom,0); //depends on defindBody() to initialize ptInGeom;
 	intersections=findRayIntersect(ray);
 
 	int numOfInts=0;
@@ -776,7 +631,7 @@ vector<Intersection> cOctree::findRayIntersect(cLine &ray)
     double s;
     for (it=polyListCheck.begin(); it!=polyListCheck.end(); ++it) {
         int polyLabel = *it;
-        if (geoFFacesList[polyLabel]->rayPlaneIntersectPoint(ray,ip,s)) {
+        if (cGeomData::getInstance()->geoFFacesList[polyLabel]->rayPlaneIntersectPoint(ray,ip,s)) {
             intersectList.push_back(Intersection(polyLabel,ip,s)); }
     }
 
@@ -921,671 +776,7 @@ void cOctree::addGapNodes()
 	//add new node -> 4 vertices and 4 intersection points
 }
 
-//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void cOctree::setup_mshPtList()
-{
-	    for(unsigned i=0;i<leafNodesList.size();i++){
-	    	if(leafNodesList[i]!=NULL){
-	    		addMshPtsOfNode(leafNodesList[i]);
-	    	}
-	    }
-}
-void cOctree::addMshPtsOfNode(cOctNode* node) //init node.elePtLabels
-{
-	//need to optimize efficiency -> only loop adjacent nodes to unique
 
-//	int mshPtIndx;
-//    for(unsigned int j=0; j<node->mshPts3DList.size();j++){
-//    	mshPtIndx=-1;
-//
-//        for (unsigned int i = 0; i < mshPtsList.size(); i++) {
-//            if (isPtSame(node->mshPts3DList[j],mshPtsList[i])) {
-//            	mshPtIndx = i;//old pt
-//            }
-//        }
-//
-//        if (mshPtIndx == -1) {//new pt -> elePtList
-//        	mshPtsList.push_back(node->mshPts3DList[j]);
-//            node->mshPtsIndxList[j]=mshPtIndxCount;
-//            mshPtIndxCount++;
-//            //cout<<"pt-"<< j << " indx is " << node->mshPtsIndxList[j] << "\n";
-//        }else
-//        //not new pt -> find index in elePtList
-//        //add pt label -> node.elePtLabels
-//        {
-//        	node->mshPtsIndxList[j]=mshPtIndx;
-//        	//cout<<"pt-"<< j << " indx is " << node->mshPtsIndxList[j] << "\n";
-//        }
-//    }
-
-	vector<double> pt;
-	vector<cOctNode*> nodesList;
-    for(unsigned int i=0; i<node->mshPts3DList.size();i++){
-    	pt=node->mshPts3DList[i];
-    	if(node->mshPtsRepeatedList[i]!=true){
-    		nodesList=getLeafNodeByPt(pt, &root);
-    		if(nodesList.size()==0){
-    			cout<<"this point (" << pt[0]<< "," <<pt[1]<< "," << pt[2]<< "," << ") is not in the octree\n";
-
-    		}else if(nodesList.size()==1){
-    			// this is a non-repeated pt
-    			mshPtsList.push_back(pt);
-    			node->mshPtsIndxList[i]=mshPtIndxCount;
-    			mshPtIndxCount++;
-
-    		}else{
-    			mshPtsList.push_back(pt);
-    			node->mshPtsIndxList[i]=mshPtIndxCount;
-    			for(unsigned j=0;j<nodesList.size();j++){
-        			if(nodesList[j]->nid!=node->nid){
-        				for(unsigned k=0; k< nodesList[j]->mshPts3DList.size();k++){
-        		            if (isPtSame(pt,nodesList[j]->mshPts3DList[k])) {
-        		            	nodesList[j]->mshPtsRepeatedList[k]=true;//old pt
-        		            	nodesList[j]->mshPtsIndxList[k]=mshPtIndxCount;
-        		            }
-        				}
-        			}
-    			}
-    			mshPtIndxCount++;
-    		}
-    	}
-    }
-
-    //update node's mshFaces->ptIndxList
-    //node.update_MshFaces_PtIndxList(node.mshPtsIndxList);
-
-}
-bool cOctree::isPtSame(vector<double>& pt1, vector<double>& pt2)
-{
-    double tol = 0.000001;
-    if ((abs(pt1[0] - pt2[0])) > tol) return false;
-    if ((abs(pt1[1] - pt2[1])) > tol) return false;
-    if ((abs(pt1[2] - pt2[2])) > tol) return false;
-    return true;
-}
-void cOctree::setup_nodeMshFaces() {
-//    for(unsigned i=0;i<leafNodesList.size();i++){
-//    	//mark mshVolIndx to all leaf node
-//    	if(leafNodesList[i]->isInteriorNode!=0){
-//        	leafNodesList[i]->mshVolIndx=mshVolIndxCount;
-//        	leafNodesList[i]->updateMshFaces_mshVolIndx(mshVolIndxCount);//mark all node's mshFaces
-//            leafNodesList[i]->calMshFaces();
-//            mshVolIndxCount++;
-//    	}else{
-//    		leafNodesList[i]->mshVolIndx=-1;
-//    		leafNodesList[i]->updateMshFaces_mshVolIndx(-1);//mark all node's mshFaces
-//    	}
-//
-//    }
-//
-
-	for(unsigned i=0;i<leafNodesList.size();i++){
-    	//mark mshVolIndx to all leaf node
-
-    	if(leafNodesList[i]!= NULL){
-        	leafNodesList[i]->mshVolIndx=mshVolIndxCount;
-        	leafNodesList[i]->updateMshFaces_mshVolIndx(mshVolIndxCount);//mark all node's mshFaces
-            leafNodesList[i]->calMshFaces();
-            mshVolIndxCount++;
-    	}
-    }
-}
-//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void cOctree::setup_boundaryMshFace()
-{
-	//boundary node -> set boundary face
-	//exterior node -> set boundary face
-	//boundary node next to exterior node -> not set boundary face
-	//cOctNode* node;
-	for(unsigned int i = 0; i < leafNodesList.size(); i++){
-		cOctNode* &node=leafNodesList[i]; //this is wrong when null is assign to reference
-
-		//node=leafNodesList[i];
-
-		if(node!=NULL){
-
-		if(node->nid=="0-0-3-3-3-3" ||node->nid=="0-0-3-3-3-7-0"){cout<<"";}
-		for(unsigned j=0; j<6;j++ ){
-			if(node->nbrsList[j].size()==0){
-				node->mshFacesList[j].isBoundaryFace=1;
-				mshBFacesList.push_back(&node->mshFacesList[j]);
-			}
-		}
-
-		}
-	}
-
-	// ================================================================
-//    int num_IntlFaces_inMshBFacesList=0;
-//    for (unsigned int i = 0; i < mshBFacesList.size(); i++) {
-//    	if(mshBFacesList[i]->isBoundaryFace==0){
-//    		num_IntlFaces_inMshBFacesList++;
-//    	}else{
-//    		num_mshBFaces++;
-//    	}
-//    }
-//    cout<<"Number of Internal Faces in mshBFacesList is "<<num_IntlFaces_inMshBFacesList<<"\n";
-//    cout<<"Number of Boundary Faces in mshBFacesList is "<<num_mshBFaces<<"\n\n";
-}
-void cOctree::setup_intlMshFace()
-{
-	cFace* currentMshFace;
-	cFace* nbrMshFace;
-	vector<cOctNode*> nbr;
-    string curFaceName;
-    string nbrMshFaceName;
-    int indxArr[6]={2, 3, 0, 1, 5, 4};
-
-	for(unsigned int i = 0; i < leafNodesList.size(); i++){
-		cOctNode* &node=leafNodesList[i];
-		if(node!=NULL){
-
-		for(unsigned j=0; j< node->mshFacesList.size();j++ ){
-			currentMshFace=&node->mshFacesList[j];
-			curFaceName=currentMshFace->nid;
-			if(currentMshFace->isBoundaryFace==-100){
-				nbr=node->nbrsList[j];
-				if(nbr.size()!=0){
-
-				for(unsigned k=0;k<nbr.size();k++){
-					nbrMshFace=(&nbr[k]->mshFacesList[indxArr[j]]);
-					nbrMshFaceName=nbrMshFace->nid;
-					if(nbrMshFaceName=="node-0-0-3-3-3-3->face-4"){
-						cout<<"";
-					}
-					int flag=currentMshFace->findFaceRelationship(currentMshFace, nbrMshFace);
-					put2List(flag,currentMshFace,nbrMshFace);
-				}
-
-				}
-			}
-		}
-
-		}
-	}
-
-//////////////////////////////////////////////////////////////////
-
-    num_mshBFaces=0;
-    num_mshIntlFaces=mshIntlFacesList.size();
-
-//	for(unsigned int i = 0; i < bNodesList.size(); i++){
-//			for(unsigned j=0; j< bNodesList[i]->mshFacesList.size();j++ ){
-//				if(bNodesList[i]->mshFacesList[j].state==0){
-//					num_mshBFaces++;
-//					//cout<< bNodesList[i]->mshFacesList[j].nid << " " << bNodesList[i]->mshFacesList[j].state <<"\n";
-//				}else{
-//					num_mshIntlFaces++;
-//				}
-//			}
-//	}
-//
-//
-//	for(unsigned int i = 0; i < nonBNodesList.size(); i++){
-//		if(nonBNodesList[i]->state==1){
-//			for(unsigned j=0; j< nonBNodesList[i]->mshFacesList.size();j++ ){
-//				if(nonBNodesList[i]->mshFacesList[j].state==0){
-//					num_mshBFaces++;
-//					//cout<< nonBNodesList[i]->mshFacesList[j].nid << " " << nonBNodesList[i]->mshFacesList[j].state <<"\n";
-//				}else{
-//					num_mshIntlFaces++;
-//				}
-//			}
-//		}
-//	}
-
-    int num_IntlFaces_inMshBFacesList=0;
-    for (unsigned int i = 0; i < mshBFacesList.size(); i++) {
-    	if(mshBFacesList[i]->isBoundaryFace==0){
-    		num_IntlFaces_inMshBFacesList++;
-    		cout<<mshBFacesList[i]->nid.c_str()<<"\n";
-    	}else{
-    		num_mshBFaces++;
-    	}
-    }
-    cout<<"Number of Internal Faces in mshBFacesList is "<<num_IntlFaces_inMshBFacesList<<"\n";
-    cout<<"Number of Boundary Faces in mshBFacesList is "<<num_mshBFaces<<"\n\n";
-
-}
-void cOctree::findMshIntlFaces()
-{
-    //add face to internalEleFacesList
-   //add face to boundaryEleFacesList - phycial name 1
-   //add face to boundaryEleFacesList - phycial name 2
-   //add face to boundaryEleFacesList - phycial name 3
-
-    int flag=-1;
-    int bFlag=0;
-    cFace* currentMshFace;
-    cFace* listMshFace;
-
-    string curFaceName;
-    string listFaceName;
-
-    int numOfFaces;
-    numOfFaces=mshAllFacesList.size();
-    int k=0;
-
-    for ( int i = 0; i < numOfFaces; i++) {
-    	k++;
-    	currentMshFace=mshAllFacesList[i];
-    	curFaceName=currentMshFace->nid;
-    	if(currentMshFace->isBoundaryFace==0){
-        	for (int j=k;j<numOfFaces;j++){
-        		listMshFace=mshAllFacesList[j];
-        		listFaceName=listMshFace->nid;
-        		//if(listMshFace->isBoundaryNode!=1){
-        			flag=currentMshFace->findFaceRelationship(currentMshFace, listMshFace);
-        			put2List(flag,currentMshFace,listMshFace);
-        			if(flag!=0){
-        				bFlag++;
-        			}
-        		//}
-        	}
-
-        	if(bFlag==0 && currentMshFace->isBoundaryFace!=10 && currentMshFace->isBoundaryFace!=1){
-        		currentMshFace->isBoundaryFace=0;
-        		mshBFacesList.push_back(currentMshFace);
-        		//cout<< currentMshFace->nid << " (" << currentMshFace->ptIndxList[0] <<"," << currentMshFace->ptIndxList[1]  <<"," << currentMshFace->ptIndxList[2]  <<"," << currentMshFace->ptIndxList[3]<< ") " << currentMshFace->isBoundaryNode <<"\n";
-        	}
-        	bFlag=0;
-    	}
-    }
-}
-void cOctree::put2List(int flag,cFace* currentMshFace,cFace* listMshFace)
-{
-    // 0 - not in
-	// 1 - same face
-	// 2 - f2 contains f1
-	// 3 - f1 contains f2
- 	if(flag==1){//same faces
-        //keep only one internal face dir based on "small volLabel point to large volLabel"
-        if (currentMshFace->mshVolIndx < listMshFace->mshVolIndx) { //current is smaller, then swap with the one in the list
-        	currentMshFace->isBoundaryFace=0;
-        	listMshFace->isBoundaryFace=0;
-            currentMshFace->nbr = listMshFace->mshVolIndx;
-            mshIntlFacesList.push_back(currentMshFace);
-        }
-        else {//current is larger, then keep it in the list
-        	currentMshFace->isBoundaryFace=0;
-        	listMshFace->isBoundaryFace=0;
-        	listMshFace->nbr = currentMshFace->mshVolIndx; //current is large, then keep the list
-        	mshIntlFacesList.push_back(listMshFace);
-        }
-	}else if(flag==2){// current face belongs to face in list-> then swap with the list
-        if (currentMshFace->mshVolIndx < listMshFace->mshVolIndx) { //current is smaller, then keep anti-clock-wise order of the face
-            listMshFace->isBoundaryFace = 0;//this is big face
-            currentMshFace->isBoundaryFace=0;
-            currentMshFace->nbr = listMshFace->mshVolIndx;
-            mshIntlFacesList.push_back(currentMshFace);
-        }
-        else {//current is larger, then change to clock-wise order of the current face
-        	listMshFace->isBoundaryFace=0;//this is big face
-        	currentMshFace->isBoundaryFace=0;
-        	currentMshFace->changeOrder();
-            currentMshFace->nbr=currentMshFace->mshVolIndx;
-            currentMshFace->own=listMshFace->mshVolIndx;
-            mshIntlFacesList.push_back(currentMshFace);
-        }
-	}else if(flag==3){//current face contains face in list -> keep the one in list
-        if (currentMshFace->mshVolIndx < listMshFace->mshVolIndx) { //current is smaller, change order of the face in list
-        	listMshFace->isBoundaryFace=0;
-        	currentMshFace->isBoundaryFace=0;//this is big face
-
-        	listMshFace->changeOrder();
-            listMshFace->nbr = listMshFace->mshVolIndx;
-            listMshFace->own = currentMshFace->mshVolIndx;
-            mshIntlFacesList.push_back(listMshFace);
-
-            //listMshFace=currentMshFace;
-        }
-        else {//current is larger, then keep the order of the face in list
-        	listMshFace->isBoundaryFace=0;
-        	currentMshFace->isBoundaryFace=0;//this is big face
-
-        	listMshFace->nbr=currentMshFace->mshVolIndx;
-            mshIntlFacesList.push_back(listMshFace);
-
-            //listMshFace=currentMshFace;
-        }
-	}else if(flag==0){
-
-	}
-}
-//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void cOctree::setup_nodePhyName() {
-
-	cOctNode *node=NULL;
-	//vector<cTri>& geoFFacesList;
-	cFace* mshFace=NULL;
-    int numOfBFaces=0;
-
-   //cout<<"BFaces in bNodesList "<<"\n";
-
-	for(unsigned i=0; i<leafNodesList.size();i++){
-		node=leafNodesList[i];
-		if(node!=NULL){
-			vector<cTri*> geoFFacesList=node->geoFFacesList;
-			for(unsigned j=0; j<node->mshFacesList.size();j++){
-				mshFace=&(node->mshFacesList[j]);
-				//judge mshFace -> phyName
-				if(mshFace->isBoundaryFace==1){
-	//				if(mshFace->nid=="node-0-3-6->face-0"){
-	//					cout<<"\n";
-	//				}
-					mshFace->findPhyName(geoFFacesList);
-					numOfBFaces++;
-					//cout<<mshFace->nid<<" "<< mshFace->state<<"\n";
-				}
-			}
-		}
-	}
-	cout<<"Number of PhyName assigned is "<<numOfBFaces<<"\n";
-}
-void cOctree::setup_mshBdsList() {
-	//init mshBdsList based on numOfPhynames
-	mshBdsList.resize(numOfGeoPhyNames+1);
-	for(int i=0; i<numOfGeoPhyNames;i++){
-		mshBdsList[i].phyName=geoPhyNamesList[i];
-		mshBdsList[i].phyNameIndx=i;
-	}
-	mshBdsList[numOfGeoPhyNames].phyName="unAssigned";
-	mshBdsList[numOfGeoPhyNames].phyNameIndx=-100;
-
-	//put mshFace into mshBdsList based on it's phyNameIndx
-	cOctNode *node=NULL;
-	cFace* mshFace=NULL;
-	int indx;
-	int numOfBFaces=0;
-	for(unsigned int i=0; i<leafNodesList.size();i++){
-		node=leafNodesList[i];
-		if(node!=NULL){
-			for(unsigned int j=0; j<node->mshFacesList.size();j++){
-				mshFace=&(node->mshFacesList[j]);
-				//judge mshFace -> phyName
-				if(mshFace->isBoundaryFace==1){
-					numOfBFaces++;
-					if(mshFace->phyName!="unAssigned"){
-						indx=mshFace->phyNameIndx;
-						mshBdsList[indx].mshFacesList.push_back(mshFace);
-					}else{
-						mshBdsList[numOfGeoPhyNames].mshFacesList.push_back(mshFace);
-						}
-				}else{
-					continue;
-				}
-			}
-		}
-	}
-
-	//complete other properties of the List
-	mshBdsList[0].startFace=mshIntlFacesList.size();
-	mshBdsList[0].nFaces=mshBdsList[0].mshFacesList.size();
-	for(int i=1; i<numOfGeoPhyNames+1;i++){
-		mshBdsList[i].nFaces=mshBdsList[i].mshFacesList.size();
-		mshBdsList[i].startFace=mshBdsList[i-1].nFaces+mshBdsList[i-1].startFace;
-	}
-
-	cout<<"Number of BFaces in mshBdsList is "<<numOfBFaces<<"\n\n";
-
-}
-//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-// +++++ save mesh
-void cOctree::saveAsGmsh(const char* _fileName)
-{
-	ofstream myFile;
-	myFile.open(_fileName, ios::app);
-	if (!myFile.is_open()){
-		cout << "Open file failure" << endl;
-	}
-
-	//general mesh format
-	myFile << "$MeshFormat" << endl;
-	myFile << "2.2 0 8" << endl; //format_version Ascii_type data_size
-	myFile << "$EndMeshFormat" << endl;
-
-	//physical entity -> boundary name
-	myFile << "$PhysicalNames" << endl;
-	myFile << cGeomData::getInstance()->numOfPhyNames << endl;
-	for(int i=0;i<cGeomData::getInstance()->numOfPhyNames; i++)
-	{
-		myFile << cGeomData::getInstance()->phyNamesList[i] <<endl;
-	}
-	myFile << "$EndPhysicalNames" << endl;
-
-	//vertices list
-	myFile << "$Nodes" << endl;
-
-	myFile << "$EndNodes" << endl;
-
-	//element list
-	myFile << "$Elements" << endl;
-	//boundary 2D element -> associate with geom entity and physical entity
-
-	//3D element -> associate with geom entity and physical entity
-
-	myFile << "$End$Elements" << endl;
-
-	myFile.close();
-}
-
-void cOctree::saveAsOFMesh() {
-	saveAsOFMeshPts();
-	saveAsOFMeshFaces();
-	saveAsOFMeshNeis();
-	saveAsOFMeshOwns();
-	saveAsOFMeshBds();
-}
-
-void cOctree::saveAsOFMeshPts() {
-	string fileName="./output/constant/polyMesh/points";
-	ofstream myFile;
-		myFile.open(fileName, ios::ate|ios::out);
-		if (!myFile.is_open()){
-			cout << "Open file failure" << endl;
-		}
-		//general mesh format
-		myFile << "FoamFile" << endl;
-		myFile << "{" << endl; //format_version Ascii_type data_size
-		myFile << "    version     2.0;" << endl;
-		myFile << "    format      ascii;" << endl;
-		myFile << "    class       vectorField;" << endl;
-		myFile << "    location    \"constant/polyMesh\";" << endl;
-		myFile << "    object      points;" << endl;
-		myFile << "}" << endl;
-		myFile << "" << endl;
-		//points
-		myFile << mshPtsList.size() << endl;
-		myFile << "(" << endl;
-		for(unsigned i=0;i<mshPtsList.size();i++){
-			vector<double> pt;
-			pt=mshPtsList[i];
-			myFile << "(" << pt[0] << " " << pt[1] << " " << pt[2] << ")\n";
-		}
-		myFile << ")" << endl;
-		myFile.close();
-}
-
-void cOctree::saveAsOFMeshFaces() {
-	string fileName="./output/constant/polyMesh/faces";
-	ofstream myFile;
-		myFile.open(fileName, ios::ate|ios::out);//open file for writing; if file exists, overwrite
-		if (!myFile.is_open()){
-			cout << "Open file failure" << endl;
-		}
-		//general mesh format
-		myFile << "FoamFile" << endl;
-		myFile << "{" << endl; //format_version Ascii_type data_size
-		myFile << "    version     2.0;" << endl;
-		myFile << "    format      ascii;" << endl;
-		myFile << "    class       faceList;" << endl;
-		myFile << "    location    \"constant/polyMesh\";" << endl;
-		myFile << "    object      faces;" << endl;
-		myFile << "}" << endl;
-		myFile << "" << endl;
-		//points
-		myFile << num_mshBFaces + num_mshIntlFaces << endl;
-		myFile << "(" << endl;
-		for(unsigned i=0;i<mshIntlFacesList.size();i++){
-			cFace* face;
-			face=mshIntlFacesList[i];
-			int nPts=face->nPts ;
-			ostringstream oss;
-			oss<< nPts << "(";
-			for(int j=0;j<nPts;j++){
-				oss<< face->ptIndxList[j]<< " ";
-			}
-			myFile << oss.str() << ")\n";
-
-//			cout<<setiosflags(ios::fixed)<<setprecision(2);
-//			cout<< face->nid << " <" << face->ptIndxList[0]<< "("<<face->ptsList[0][0] <<","<<face->ptsList[0][1] <<","<<face->ptsList[0][2] <<"), "
-//									 << face->ptIndxList[1]<< "("<<face->ptsList[1][0] <<","<<face->ptsList[1][1] <<","<<face->ptsList[1][2] <<"), "
-//					                 << face->ptIndxList[2]<< "("<<face->ptsList[2][0] <<","<<face->ptsList[2][1] <<","<<face->ptsList[2][2] <<"), "
-//					                 << face->ptIndxList[3]<< "("<<face->ptsList[3][0] <<","<<face->ptsList[3][1] <<","<<face->ptsList[3][2] <<")> "
-//			    << face->isBoundaryNode <<" "<< face->phyName <<"\n";
-
-			oss.clear();
-		}
-
-		for(unsigned i=0;i<mshBdsList.size();i++){
-			vector<cFace*> mshFacesList=mshBdsList[i].mshFacesList;
-			for(unsigned j=0;j<mshFacesList.size();j++){
-				cFace* face;
-				face=mshFacesList[j];
-				int nPts=face->nPts ;
-				ostringstream oss;
-				oss<< nPts << "(";
-				for(int k=0;k<nPts;k++){
-					oss<< face->ptIndxList[k]<< " ";
-				}
-				myFile << oss.str() << ")\n";
-				//cout<< face->nid << " (" << face->ptIndxList[0] <<"," << face->ptIndxList[1]  <<"," << face->ptIndxList[2]  <<"," << face->ptIndxList[3]<< ") " << face->isBoundaryNode <<" "<< face->phyName <<"\n";
-
-				oss.clear();
-			}
-		}
-		myFile << ")" << endl;
-		myFile.close();
-}
-
-void cOctree::saveAsOFMeshNeis() {
-	string fileName="./output/constant/polyMesh/neighbour";
-	ofstream myFile;
-		myFile.open(fileName, ios::ate|ios::out);
-		if (!myFile.is_open()){
-			cout << "Open file failure" << endl;
-		}
-		//general mesh format
-		myFile << "FoamFile" << endl;
-		myFile << "{" << endl; //format_version Ascii_type data_size
-		myFile << "    version     2.0;" << endl;
-		myFile << "    format      ascii;" << endl;
-		myFile << "    class       labelList;" << endl;
-		myFile << "    note       \"nPoints:" << mshPtsList.size()<< "\t nCells:"<< countAllNodes(&root) << "\t nFaces:"<<num_mshBFaces + num_mshIntlFaces<<"\t nInternalFaces:" <<num_mshIntlFaces<<"\";\n";
-		myFile << "    location    \"constant/polyMesh\";" << endl;
-		myFile << "    object      neighbour;" << endl;
-		myFile << "}" << endl;
-		myFile << "" << endl;
-		//points
-		myFile << num_mshIntlFaces << endl;
-		myFile << "(" << endl;
-		for(int i=0;i<num_mshIntlFaces;i++){
-			cFace* face;
-			face=mshIntlFacesList[i];
-			myFile << face->nbr << "\n";
-		}
-		myFile << ")" << endl;
-		myFile.close();
-}
-
-void cOctree::saveAsOFMeshOwns() {
-	string fileName="./output/constant/polyMesh/owner";
-	ofstream myFile;
-		myFile.open(fileName, ios::ate|ios::out);
-		if (!myFile.is_open()){
-			cout << "Open file failure" << endl;
-		}
-		//general mesh format
-		myFile << "FoamFile" << endl;
-		myFile << "{" << endl; //format_version Ascii_type data_size
-		myFile << "    version     2.0;" << endl;
-		myFile << "    format      ascii;" << endl;
-		myFile << "    class       labelList;" << endl;
-		myFile << "    note       \"nPoints:" << mshPtsList.size()<< "\t nCells:"<< countAllNodes(&root) << "\t nFaces:"<<num_mshBFaces + num_mshIntlFaces<<"\t nInternalFaces:" <<num_mshIntlFaces<<"\";\n";
-		myFile << "    location    \"constant/polyMesh\";" << endl;
-		myFile << "    object      owner;" << endl;
-		myFile << "}" << endl;
-		myFile << "" << endl;
-		//points
-		myFile << num_mshBFaces+num_mshIntlFaces << endl;
-		myFile << "(" << endl;
-		for(unsigned i=0;i<mshIntlFacesList.size();i++){
-			cFace* face;
-			face=mshIntlFacesList[i];
-			myFile << face->own << "\n";
-		}
-
-		for(unsigned i=0;i<mshBdsList.size();i++){
-			vector<cFace*> mshFacesList=mshBdsList[i].mshFacesList;
-			for(unsigned j=0;j<mshFacesList.size();j++){
-				cFace* face;
-				face=mshFacesList[j];
-				myFile << face->own << "\n";
-			}
-		}
-
-		myFile << ")" << endl;
-		myFile.close();
-}
-
-
-void cOctree::saveAsOFMeshBds() {
-	string fileName="./output/constant/polyMesh/boundary";
-	ofstream myFile;
-		myFile.open(fileName, ios::ate|ios::out);
-		if (!myFile.is_open()){
-			cout << "Open file failure" << endl;
-		}
-		//general mesh format
-		myFile << "FoamFile" << endl;
-		myFile << "{" << endl; //format_version Ascii_type data_size
-		myFile << "    version     2.0;" << endl;
-		myFile << "    format      ascii;" << endl;
-		myFile << "    class       polyBoundaryMesh;" << endl;
-		myFile << "    location    \"constant/polyMesh\";" << endl;
-		myFile << "    object      boundary;" << endl;
-		myFile << "}" << endl;
-		myFile << "" << endl;
-		//points
-		myFile << mshBdsList.size() << endl;
-		myFile << "(" << endl;
-
-		for(unsigned i=0;i<mshBdsList.size();i++){
-			string phyName=mshBdsList[i].phyName;
-			string patchTpye=mshBdsList[i].patchType;
-			int nFaces=mshBdsList[i].nFaces;
-			int startFace=mshBdsList[i].startFace;
-			ostringstream oss;
-			oss<<"\t"<< phyName << "\n\t{\n";
-			oss<<"\t\t"<<"type    "<<patchTpye<<";\n";
-			oss<<"\t\t"<<"nFaces    "<<nFaces<<";\n";
-			oss<<"\t\t"<<"startFace    "<<startFace<<";\n";
-			oss<<"\t}\n";
-			myFile << oss.str() << endl;
-			oss.clear();
-		}
-
-		myFile << ")" << endl;
-		myFile.close();
-}
-
-
-// +++++ save mesh
 
 // ------------------------------------------------------
 

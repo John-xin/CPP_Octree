@@ -18,19 +18,10 @@
     <ClCompile Include="Octree_20201212.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\cBoundary.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\cFace.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\cFeature.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\cGeomData.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\cLine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\cOctNode.cpp">
@@ -42,24 +33,15 @@
     <ClCompile Include="src\commonFunc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\cTri.cpp">
+    <ClCompile Include="src\cOctreeApp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\cBoundary.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\cFace.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\cFeature.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\cGeomData.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\cLine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\cOctNode.h">
@@ -71,7 +53,7 @@
     <ClInclude Include="src\commonFunc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\cTri.h">
+    <ClInclude Include="src\cOctreeApp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

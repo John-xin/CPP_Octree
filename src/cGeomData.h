@@ -26,6 +26,10 @@ using namespace std;
  * If it is existed, get same element index of the list; otherwise add it into the list and get the new index.
  *
 */
+class cFeaturePt;
+class cFeatureEdge;
+class cFeatureFace;
+
 class cGeomData
 {
     private:
@@ -43,9 +47,14 @@ class cGeomData
         bool isVertSame(vector<double>& vert1, vector<double>& vert2);
         void getLowUppVerts();//two points of the bounding box
         void output2Console();
+    
+        void setup_geoFFacesList();
+        void setup_geoFPtsList();
+        void setup_geoFEdgesList();
+        void extractFeature();
 
         //fields
-        //static cGeomData* theGeomData;
+        //STL data -> initialized by cGeomData::readSTLData(const char* _fileName)
         vector<vector<double>> pts3DList; // n x 3
         vector<vector<int>> trisList; // n x 4 ->format (pt1, pt2, pt3, phyNameInx)
         vector<string> phyNamesList;
@@ -53,10 +62,21 @@ class cGeomData
         int numOfPts;
         int numOfPhyNames;
         vector<double> low, upp; //low & upp of the pts3DList
+	
+        //features in the STL data -> initialized by cGeomData::extractFeature() -> depended on cGeomData::readSTLData(const char* _fileName)
+        vector<cFeatureFace*> geoFFacesList; //geom feature faces list
+        vector<cFeatureEdge*> geoFEdgesList; //geom feature edges list
+        vector<cFeaturePt*> geoFPtsList; //geom feature pts list
+        int numOfGeoFFaces;
+        int numOfGeoFEdges;
+        int numOfGeoFPts;
+
+        //points in the geometry to defind body -> initialized by cOctreeApp::defineBody(vector<double> _ptInGeom)
+        vector<double> ptInGeom;
 
         //utility
-        int countLabel=0;
-        int phyNumCount=-1;
+        int countLabel = 0;
+        int phyNumCount = -1;
         vector<int> vLabels; //format (pt1, pt2, pt3, pyhNumInx)
 
 };

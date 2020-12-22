@@ -143,7 +143,7 @@ void commonFunc::output_octree(const char* _fileName, cOctree* tree)
         vector<int> mshPtsIndxList;
         mshPtsIndxList.resize(8, -1);
         if (node->mshPtsIndxList.size() != 0) {
-            for (int j = 0; j < node->mshPtsIndxList.size(); j++) {
+            for (unsigned int j = 0; j < node->mshPtsIndxList.size(); j++) {
                 mshPtsIndxList[j]=node->mshPtsIndxList[j];
             }
         }
@@ -164,9 +164,9 @@ void commonFunc::output_octree(const char* _fileName, cOctree* tree)
         }
 
         if (node->mshFacesList.size() != 0) {
-            for (int j = 0; j < node->mshFacesList.size(); j++) {
+            for (unsigned int j = 0; j < node->mshFacesList.size(); j++) {
                 if (node->mshFacesList[j].ptsList.size() != 0) {
-                    for (int k = 0; k < node->mshFacesList[j].ptIndxList.size(); k++) {
+                    for (unsigned int k = 0; k < node->mshFacesList[j].ptIndxList.size(); k++) {
                         mshFaces_ptIndxList[j][k] = node->mshFacesList[j].ptIndxList[k];
                     }
                 } else {

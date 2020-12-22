@@ -141,26 +141,20 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Octree_20201212.cpp" />
-    <ClCompile Include="src\cBoundary.cpp" />
-    <ClCompile Include="src\cFace.cpp" />
     <ClCompile Include="src\cFeature.cpp" />
     <ClCompile Include="src\cGeomData.cpp" />
-    <ClCompile Include="src\cLine.cpp" />
     <ClCompile Include="src\cOctNode.cpp" />
     <ClCompile Include="src\cOctree.cpp" />
+    <ClCompile Include="src\cOctreeApp.cpp" />
     <ClCompile Include="src\commonFunc.cpp" />
-    <ClCompile Include="src\cTri.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\cBoundary.h" />
-    <ClInclude Include="src\cFace.h" />
     <ClInclude Include="src\cFeature.h" />
     <ClInclude Include="src\cGeomData.h" />
-    <ClInclude Include="src\cLine.h" />
     <ClInclude Include="src\cOctNode.h" />
     <ClInclude Include="src\cOctree.h" />
+    <ClInclude Include="src\cOctreeApp.h" />
     <ClInclude Include="src\commonFunc.h" />
-    <ClInclude Include="src\cTri.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="etc\bldg.stl" />

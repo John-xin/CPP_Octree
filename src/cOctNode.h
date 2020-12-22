@@ -13,11 +13,6 @@
 #include <utility>   // pair
 
 
-#include "cFace.h"
-#include "cLine.h"
-
-
-
 // OpenMP headers
 #ifdef _OPENMP
   #include <omp.h>
@@ -27,8 +22,64 @@ using namespace std;
 
 class cFeaturePt;
 class cFeatureEdge;
-class cTri;
+class cFeatureFace;
+class cLine;
+class cFace;
+class cOctNode;
 
+//**********************************************************************
+//**********************************************************************
+class cBoundary {
+public:
+    cBoundary();
+    ~cBoundary();
+    
+    string phyName;
+    int phyNameIndx;
+    vector<cFace*> mshFacesList;
+    string patchType;
+    int startFace;
+    int nFaces;
+};
+//**********************************************************************
+//**********************************************************************
+class cFace{
+public:
+	cFace();
+	~cFace();
+	string nid;
+	int nbr; //neighbour
+	int own; //owner
+	int label;
+	int nPts;
+	vector<vector<double> > ptsList;
+	vector<int> ptIndxList;
+	vector<double> N;
+	vector<double> centroid;
+
+
+	bool bFlag; //boundary flag;
+	string phyName;
+	int phyNameIndx;
+    vector<double> low;
+    vector<double> upp;
+    int mshVolIndx;
+    int isBoundaryFace; //1-boundary face ; 0 - internal face
+    cOctNode* node;
+
+    void getN();
+    double getAngle(cFace *surface);
+    vector<double> getCentroid();
+    void findPhyName(vector<cFeatureFace*> _geoFFacesList);
+    int findGeoFaceWithMinDist(cLine _ray,vector<cFeatureFace*> _geoFFacesList);
+    void changeOrder();
+    int findFaceRelationship(cFace* f1, cFace* f2);
+    bool isPtInFace(vector<double> pt);
+
+};
+
+//**********************************************************************
+//**********************************************************************
 class cOctNode {
 public:
 
@@ -49,7 +100,7 @@ public:
     int isBoundaryNode;//1 - boundary node; 0 - non-boundary node;
     int isInteriorNode;//1 - interior node; 0 - exterior node;
 
-    vector<cTri*> geoFFacesList; //geom feature faces list
+    vector<cFeatureFace*> geoFFacesList; //geom feature faces list
     vector<cFeaturePt*> geoFPtsList; //geom feature pts list
     vector<cFeatureEdge*> geoFEdgesList; //geom feature edges list
 
@@ -67,7 +118,7 @@ public:
     cOctNode(int _level, string _nid, vector<double> _position, double _size,
     		vector<cFeaturePt*> _geoFPtsList,
     		vector<cFeatureEdge*> _geoFEdgesList,
-    		vector<cTri*> _geoFFacesList,
+    		vector<cFeatureFace*> _geoFFacesList,
     		cOctNode* _parent);
     ~cOctNode();
     bool isLeafNode();
@@ -80,7 +131,7 @@ public:
     void addNode(int _level, string _nid, vector<double> _position, double _size,
     			vector<cFeaturePt*> _geoFPtsList,
     			vector<cFeatureEdge*> _geoFEdgesList,
-    			vector<cTri*> _geoFFacesList,
+    			vector<cFeatureFace*> _geoFFacesList,
     			cOctNode* _parent);
     void getLowUppVerts();//calc low and upp by position
     void calMshPts3D();
