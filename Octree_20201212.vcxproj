@@ -146,6 +146,7 @@
     <ClCompile Include="src\cOctNode.cpp" />
     <ClCompile Include="src\cOctree.cpp" />
     <ClCompile Include="src\cOctreeApp.cpp" />
+    <ClCompile Include="src\cOctreeUtil.cpp" />
     <ClCompile Include="src\commonFunc.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -154,6 +155,7 @@
     <ClInclude Include="src\cOctNode.h" />
     <ClInclude Include="src\cOctree.h" />
     <ClInclude Include="src\cOctreeApp.h" />
+    <ClInclude Include="src\cOctreeUtil.h" />
     <ClInclude Include="src\commonFunc.h" />
   </ItemGroup>
   <ItemGroup>

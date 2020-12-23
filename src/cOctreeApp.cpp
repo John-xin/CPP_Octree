@@ -1,9 +1,12 @@
 #include "cOctreeApp.h"
+#include "cOctree.h"
+#include "cOctreeUtil.h"
 
 cOctreeApp::cOctreeApp()
 {
 	geom = cGeomData::getInstance();
 	octree = new cOctree();
+	util = new cOctreeUtil();
 }
 
 cOctreeApp::~cOctreeApp()
@@ -17,11 +20,12 @@ void cOctreeApp::defineBody(vector<double> _ptInGeom) {
 	}else{
 		geom->ptInGeom=_ptInGeom;
 	}
-
 }
 
 void cOctreeApp::buildOctree() {
-    //1. init root node
+
+	
+	//1. init root node
     octree->setup_root();
 
     //2. +++++++++++++++++++++++++++
@@ -31,17 +35,20 @@ void cOctreeApp::buildOctree() {
 	octree->splitOctreeByMinLevel(&(octree->root));
     //std::cout << "After splitOctreeByMinLevel " << "\n";
     //outputNodeName(&root);
-	commonFunc::getInstance()->output_octree("./output/byMinLevel_octree.txt", octree);
+	//util->output_octree("./output/byMinLevel_octree.txt", octree);
 	
 	octree->splitOctreeByFeaturePt(&(octree->root));
-	commonFunc::getInstance()->output_octree("./output/byFeaturePt_octree.txt", octree);
+	//util->output_octree("./output/byFeaturePt_octree.txt", octree);
     //splitNodeByPhyName("bldg",6,&root);
     //splitNodeById("0-0");
     //std::cout << "After splitOctreeByFeaturePt " << "\n";
     //outputNodeName(&root);
 	octree->getOctreeDepth(&(octree->root));
 	octree->balanceOctree(&(octree->root));
-	commonFunc::getInstance()->output_octree("./output/balanced_octree.txt", octree);
+	//util->output_octree("./output/balanced_octree.txt", octree);
+	//util->outputNodeName(&(octree->root));
+	octree->setup_leafNodesList(&(octree->root));
+	octree->setup_leafNodesNbr();//n*logN - set nbrs for all leafNodes
 
 	//3. identify boundary / interior / exterior node +++++++++++++++++++++++++++
 	//find boundary node if it includes geoFFaces
@@ -51,15 +58,14 @@ void cOctreeApp::buildOctree() {
 
 	//split nbrs fo extNode to same level as extNode
 
-	octree->splitExtNodeNbr(&(octree->root));
-	octree->setup_boundaryNode(&(octree->root));
-	octree->setup_interiorNode(&(octree->root));
+	//octree->splitExtNodeNbr(&(octree->root));
+	//octree->setup_boundaryNode(&(octree->root));
+	//octree->setup_interiorNode(&(octree->root));
 
-	octree->setup_leafNodesList(&(octree->root));
-	octree->setup_leafNodesNbr();//n*logN - set nbrs for all leafNodes
 
-	octree->delExtNodes();
-	commonFunc::getInstance()->output_octree("./output/delExtNodes_octree.txt", octree);
+
+	//octree->delExtNodes();
+	//util->output_octree("./output/delExtNodes_octree.txt", octree);
     //std::cout<<"bNodesList length is "<< bNodesList.size() <<"\n";
     //std::cout<<"nonBNodesList length is "<< nonBNodesList.size() <<"\n";
 
@@ -68,14 +74,15 @@ void cOctreeApp::buildOctree() {
     //from leaf nodes -> identify non-repeated mshPt
 	setup_mshPtList();
     cout<<"num of mshPts is "<< mshPtsList.size() <<"\n";
-	commonFunc::getInstance()->output_octree("./output/setup_mshPts_octree.txt", octree);
+	//util->output_octree("./output/setup_mshPts_octree.txt", octree);
     //outputMshPts(root);
     //from leaf nodes -> define node -> 6 faces by mshPt index
     //init mshFace -> own, nid, low, upp, ptIndxList
     //and mark mshVolIndx
     setup_nodeMshFaces();
-	commonFunc::getInstance()->output_octree("./output/setup_mshFaces_octree.txt", octree);
-    //5. from boundary / interior node -> identify internal / boundary mshFace +++++++++++++++++++++++++++
+	//util->output_octree("./output/setup_mshFaces_octree.txt", octree);
+   
+	//5. from boundary / interior node -> identify internal / boundary mshFace +++++++++++++++++++++++++++
     //update own, nei, ptIndxList
     setup_boundaryMshFace();
     setup_intlMshFace();
@@ -215,10 +222,10 @@ void cOctreeApp::setup_boundaryMshFace()
 
 		if(node!=NULL){
 
-		if(node->nid=="0-0-3-3-3-3" ||node->nid=="0-0-3-3-3-7-0"){cout<<"";}
+		//if(node->nid=="0-0-3-3-3-3" ||node->nid=="0-0-3-3-3-7-0"){cout<<"";}
 		for(unsigned j=0; j<6;j++ ){
 			if(node->nbrsList[j].size()==0){
-				node->mshFacesList[j].isBoundaryFace=1;
+				node->mshFacesList[j].state=FaceState::boundary;
 				mshBFacesList.push_back(&node->mshFacesList[j]);
 			}
 		}
@@ -254,7 +261,7 @@ void cOctreeApp::setup_intlMshFace()
 		for(unsigned j=0; j< node->mshFacesList.size();j++ ){
 			currentMshFace=&node->mshFacesList[j];
 			curFaceName=currentMshFace->nid;
-			if(currentMshFace->isBoundaryFace==-100){
+			if(currentMshFace->state==FaceState::unassigned){
 				nbr=node->nbrsList[j];
 				if(nbr.size()!=0){
 
@@ -307,7 +314,7 @@ void cOctreeApp::setup_intlMshFace()
 
     int num_IntlFaces_inMshBFacesList=0;
     for (unsigned int i = 0; i < mshBFacesList.size(); i++) {
-    	if(mshBFacesList[i]->isBoundaryFace==0){
+    	if(mshBFacesList[i]->state==FaceState::internal){
     		num_IntlFaces_inMshBFacesList++;
     		cout<<mshBFacesList[i]->nid.c_str()<<"\n";
     	}else{
@@ -341,7 +348,7 @@ void cOctreeApp::findMshIntlFaces()
     	k++;
     	currentMshFace=mshAllFacesList[i];
     	curFaceName=currentMshFace->nid;
-    	if(currentMshFace->isBoundaryFace==0){
+    	if(currentMshFace->state==FaceState::internal){
         	for (int j=k;j<numOfFaces;j++){
         		listMshFace=mshAllFacesList[j];
         		listFaceName=listMshFace->nid;
@@ -354,11 +361,13 @@ void cOctreeApp::findMshIntlFaces()
         		//}
         	}
 
+			/*
         	if(bFlag==0 && currentMshFace->isBoundaryFace!=10 && currentMshFace->isBoundaryFace!=1){
         		currentMshFace->isBoundaryFace=0;
         		mshBFacesList.push_back(currentMshFace);
         		//cout<< currentMshFace->nid << " (" << currentMshFace->ptIndxList[0] <<"," << currentMshFace->ptIndxList[1]  <<"," << currentMshFace->ptIndxList[2]  <<"," << currentMshFace->ptIndxList[3]<< ") " << currentMshFace->isBoundaryNode <<"\n";
         	}
+			*/
         	bFlag=0;
     	}
     }
@@ -372,27 +381,27 @@ void cOctreeApp::put2List(int flag,cFace* currentMshFace,cFace* listMshFace)
  	if(flag==1){//same faces
         //keep only one internal face dir based on "small volLabel point to large volLabel"
         if (currentMshFace->mshVolIndx < listMshFace->mshVolIndx) { //current is smaller, then swap with the one in the list
-        	currentMshFace->isBoundaryFace=0;
-        	listMshFace->isBoundaryFace=0;
+        	currentMshFace->state=FaceState::internal;
+        	listMshFace->state = FaceState::internal;
             currentMshFace->nbr = listMshFace->mshVolIndx;
             mshIntlFacesList.push_back(currentMshFace);
         }
         else {//current is larger, then keep it in the list
-        	currentMshFace->isBoundaryFace=0;
-        	listMshFace->isBoundaryFace=0;
+        	currentMshFace->state = FaceState::internal;
+        	listMshFace->state = FaceState::internal;
         	listMshFace->nbr = currentMshFace->mshVolIndx; //current is large, then keep the list
         	mshIntlFacesList.push_back(listMshFace);
         }
 	}else if(flag==2){// current face belongs to face in list-> then swap with the list
         if (currentMshFace->mshVolIndx < listMshFace->mshVolIndx) { //current is smaller, then keep anti-clock-wise order of the face
-            listMshFace->isBoundaryFace = 0;//this is big face
-            currentMshFace->isBoundaryFace=0;
+            listMshFace->state = FaceState::internal;//this is big face
+            currentMshFace->state = FaceState::internal;
             currentMshFace->nbr = listMshFace->mshVolIndx;
             mshIntlFacesList.push_back(currentMshFace);
         }
         else {//current is larger, then change to clock-wise order of the current face
-        	listMshFace->isBoundaryFace=0;//this is big face
-        	currentMshFace->isBoundaryFace=0;
+        	listMshFace->state = FaceState::internal;//this is big face
+        	currentMshFace->state=FaceState::internal;
         	currentMshFace->changeOrder();
             currentMshFace->nbr=currentMshFace->mshVolIndx;
             currentMshFace->own=listMshFace->mshVolIndx;
@@ -400,8 +409,8 @@ void cOctreeApp::put2List(int flag,cFace* currentMshFace,cFace* listMshFace)
         }
 	}else if(flag==3){//current face contains face in list -> keep the one in list
         if (currentMshFace->mshVolIndx < listMshFace->mshVolIndx) { //current is smaller, change order of the face in list
-        	listMshFace->isBoundaryFace=0;
-        	currentMshFace->isBoundaryFace=0;//this is big face
+        	listMshFace->state = FaceState::internal;
+        	currentMshFace->state = FaceState::internal;//this is big face
 
         	listMshFace->changeOrder();
             listMshFace->nbr = listMshFace->mshVolIndx;
@@ -411,8 +420,8 @@ void cOctreeApp::put2List(int flag,cFace* currentMshFace,cFace* listMshFace)
             //listMshFace=currentMshFace;
         }
         else {//current is larger, then keep the order of the face in list
-        	listMshFace->isBoundaryFace=0;
-        	currentMshFace->isBoundaryFace=0;//this is big face
+        	listMshFace->state = FaceState::internal;
+        	currentMshFace->state = FaceState::internal;//this is big face
 
         	listMshFace->nbr=currentMshFace->mshVolIndx;
             mshIntlFacesList.push_back(listMshFace);
@@ -442,7 +451,7 @@ void cOctreeApp::setup_nodePhyName() {
 			for(unsigned j=0; j<node->mshFacesList.size();j++){
 				mshFace=&(node->mshFacesList[j]);
 				//judge mshFace -> phyName
-				if(mshFace->isBoundaryFace==1){
+				if(mshFace->state==FaceState::boundary){
 	//				if(mshFace->nid=="node-0-3-6->face-0"){
 	//					cout<<"\n";
 	//				}
@@ -476,7 +485,7 @@ void cOctreeApp::setup_mshBdsList() {
 			for(unsigned int j=0; j<node->mshFacesList.size();j++){
 				mshFace=&(node->mshFacesList[j]);
 				//judge mshFace -> phyName
-				if(mshFace->isBoundaryFace==1){
+				if(mshFace->state == FaceState::boundary){
 					numOfBFaces++;
 					if(mshFace->phyName!="unAssigned"){
 						indx=mshFace->phyNameIndx;
@@ -574,7 +583,7 @@ void cOctreeApp::saveAsOFMeshPts() {
 		for(unsigned i=0;i<mshPtsList.size();i++){
 			vector<double> pt;
 			pt=mshPtsList[i];
-			myFile << "(" << pt[0] << " " << pt[1] << " " << pt[2] << ")\n";
+			myFile << "( " << pt[0] << " " << pt[1] << " " << pt[2] << " )\n";
 		}
 		myFile << ")" << endl;
 		myFile.close();

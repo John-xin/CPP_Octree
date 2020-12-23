@@ -7,7 +7,7 @@
 #include "cFeature.h"
 #include "cGeomData.h"
 #include "cOctNode.h"
-#include "cOctree.h"
+
 
 // OpenMP headers
 #ifdef _OPENMP
@@ -15,6 +15,9 @@
 #endif
 
 using namespace std;
+
+class cOctree;
+class cOctreeUtil;
 
 class cOctreeApp {
 public:
@@ -24,14 +27,8 @@ public:
     //octree setup depends on geomData - run geomData read STL first
     //simple geom data
     cGeomData* geom;
-    //vector<vector<double> >& geoPts3DList=cGeomData::getInstance()->pts3DList;
-    //vector<vector<int> >& geoTrisList=cGeomData::getInstance()->trisList;
-    //vector<string>& geoPhyNamesList=cGeomData::getInstance()->phyNamesList;
-    //int numOfGeoPts;
-    //int numOfGeoTris;
-    //int numOfGeoPhyNames;
-
     cOctree* octree;
+    cOctreeUtil* util;
     cOctreeApp();
     ~cOctreeApp();
 

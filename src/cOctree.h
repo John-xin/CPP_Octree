@@ -31,7 +31,7 @@ using namespace std;
 class cOctree {
 public:
     static const int MAX_OCTREE_LEVELS = 3;
-    static const int MIN_OCTREE_LEVELS = 1;
+    static const int MIN_OCTREE_LEVELS = 2;
     static const int MAX_OCTNODE_FEATS = 2;
     int branchOffsets[8][3];
     int depth;
@@ -52,9 +52,7 @@ public:
     int countExtNodes(cOctNode *node);
     int countBNodes(cOctNode *node);
     void showOctreeNodes();
-    void outputNodeName(cOctNode *node);
-    void outputMshPts(cOctNode *node);
-    void outputMshFaces(cOctNode *node);
+
 
     void setup_root();
     double getSizeRoot();//get length of root cube

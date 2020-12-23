@@ -43,6 +43,9 @@ public:
 };
 //**********************************************************************
 //**********************************************************************
+namespace FaceState {
+    enum FaceState { unassigned = 0, boundary, internal };
+}
 class cFace{
 public:
 	cFace();
@@ -64,7 +67,8 @@ public:
     vector<double> low;
     vector<double> upp;
     int mshVolIndx;
-    int isBoundaryFace; //1-boundary face ; 0 - internal face
+    FaceState::FaceState state;
+    //1-boundary face ; 0 - internal face
     cOctNode* node;
 
     void getN();
@@ -80,6 +84,10 @@ public:
 
 //**********************************************************************
 //**********************************************************************
+ namespace NodeState {
+    enum NodeState { unassigned = 0, boundary, nonBoundary, interior, exterior };
+}
+
 class cOctNode {
 public:
 
@@ -97,12 +105,13 @@ public:
 
     vector<double> low, upp;
     int mshVolIndx;
-    int isBoundaryNode;//1 - boundary node; 0 - non-boundary node;
-    int isInteriorNode;//1 - interior node; 0 - exterior node;
+    NodeState::NodeState state;
+    //1 - boundary node; 0 - non-boundary node;
+    //1 - interior node; 0 - exterior node;
 
     vector<cFeatureFace*> geoFFacesList; //geom feature faces list
-    vector<cFeaturePt*> geoFPtsList; //geom feature pts list
     vector<cFeatureEdge*> geoFEdgesList; //geom feature edges list
+    vector<cFeaturePt*> geoFPtsList; //geom feature pts list
 
     vector<int> geoFFacesIndxList; //geam tri
 //    vector<int> geoFPtsIndxList; //feature pts
@@ -112,7 +121,6 @@ public:
     vector<int> mshPtsIndxList;
     vector<bool> mshPtsRepeatedList;
     vector<cFace> mshFacesList;//element faces
-
 
     cOctNode();
     cOctNode(int _level, string _nid, vector<double> _position, double _size,

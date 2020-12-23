@@ -19,8 +19,6 @@
 #include <algorithm> // find, sort
 #include <utility>   // pair
 #include <fstream>
-#include "cFeature.h"
-
 
 using namespace std;
 
@@ -49,10 +47,6 @@ public:
 
 	//static commonFunc* theCommonFunc;
 
-	//test program
-	void output_geoFFacesList(vector<cFeatureFace*>& geoFFacesList);
-	void output_geoFPtsList(vector<cFeaturePt*>& geoFPtsList, vector<vector<double> >& geoPts3DList);
-	void output_octree(const char* _fileName, cOctree* tree);
 
 };
 

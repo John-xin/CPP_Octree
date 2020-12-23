@@ -35,7 +35,7 @@ cFace::cFace()
     phyName = "unAssigned";
     phyNameIndx=-100;
     mshVolIndx = -100;
-    isBoundaryFace=-100;
+    state = FaceState::unassigned;
     node=NULL;
 
 }
@@ -222,8 +222,7 @@ cOctNode::cOctNode()
     depth = 1;
     nid   = "";
     size  = 1.0;
-    isBoundaryNode=-100;
-    isInteriorNode=-100;
+    state = NodeState::unassigned;
     parent=NULL;
     position.resize(3,0.0);
     getLowUppVerts();
@@ -244,8 +243,7 @@ cOctNode::cOctNode(int _level, string _nid, vector<double> _position, double _si
     position = _position;
     size     = _size;
     mshVolIndx = -100;
-    isBoundaryNode=-100;
-    isInteriorNode=-100;
+    state = NodeState::unassigned;
     parent=_parent;
     geoFPtsList=_geoFPtsList;
     geoFEdgesList=_geoFEdgesList;
