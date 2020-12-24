@@ -74,7 +74,7 @@ void cOctreeApp::buildOctree() {
     //from leaf nodes -> identify non-repeated mshPt
 	setup_mshPtList();
     cout<<"num of mshPts is "<< mshPtsList.size() <<"\n";
-	//util->output_octree("./output/setup_mshPts_octree.txt", octree);
+	util->output_leafNodes("./output/leafNodes.txt", octree->leafNodesList);
     //outputMshPts(root);
     //from leaf nodes -> define node -> 6 faces by mshPt index
     //init mshFace -> own, nid, low, upp, ptIndxList

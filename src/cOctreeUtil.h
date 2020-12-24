@@ -33,6 +33,7 @@ public:
     void output_geoFFacesList(vector<cFeatureFace*>& geoFFacesList);
     void output_geoFPtsList(vector<cFeaturePt*>& geoFPtsList, vector<vector<double> >& geoPts3DList);
     void output_octree(const char* _fileName, cOctree* tree);
+    void output_leafNodes(const char* _fileName, vector<cOctNode*> leafNodesList);
 };
 
 

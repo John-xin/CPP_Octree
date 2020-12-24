@@ -160,3 +160,46 @@ void cOctreeUtil::output_octree(const char* _fileName, cOctree* tree)
     //**********output octree************
     myFile.close();
 }
+
+void cOctreeUtil::output_leafNodes(const char* _fileName, vector<cOctNode*> leafNodesList)
+{
+    ofstream myFile;
+    myFile.open(_fileName, ios::ate | ios::out);
+    if (!myFile.is_open()) {
+        cout << "Open file failure" << endl;
+    }
+    //**********output octree************
+    myFile << "id mshPtIndxList state" << endl;
+    //output 
+    for (unsigned int i = 0; i < leafNodesList.size(); i++) {
+        cOctNode* node = leafNodesList[i];
+
+        string nid = node->nid;
+
+        int numOfGeoFPts = node->geoFPtsList.size();
+        int numOfGeoFEdges = node->geoFEdgesList.size();
+        int numOfGeoFFaces = node->geoFFacesList.size();
+
+        vector<int> mshPtsIndxList;
+        mshPtsIndxList.resize(8, -1);
+        if (node->mshPtsIndxList.size() != 0) {
+            for (unsigned int j = 0; j < node->mshPtsIndxList.size(); j++) {
+                mshPtsIndxList[j] = node->mshPtsIndxList[j];
+            }
+        }
+
+        ostringstream oss;
+        oss << nid << " [ ";
+        for (int j = 0; j < 8; j++) {
+            oss << mshPtsIndxList[j] << ",";
+        }
+        oss << "] ";
+        oss << node->state;
+  
+        myFile << oss.str() << endl;
+        oss.clear();
+    }
+    //**********output octree************
+    myFile.close();
+
+}
