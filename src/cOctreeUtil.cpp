@@ -91,7 +91,7 @@ void cOctreeUtil::output_octree(const char* _fileName, cOctree* tree)
         cout << "Open file failure" << endl;
     }
     //**********output octree************
-    myFile << "id numOfFPts numOfFEdges numOfFFaces mshPtsIndxList mshFaces-nid mshFaces-PtsIndxList" << endl;
+    myFile << "id numOfFeatures mshPtsIndxList mshFaces-nid mshFaces-PtsIndxList" << endl;
     //output 
     for (unsigned i = 0; i < tree->allNodesList.size(); i++) {
         cOctNode* node = tree->allNodesList[i];
@@ -116,43 +116,41 @@ void cOctreeUtil::output_octree(const char* _fileName, cOctree* tree)
 
         vector<vector<int>> mshFaces_ptIndxList;
         mshFaces_ptIndxList.resize(6);
-        for (int j = 0; j < 6; j++) {
-            mshFaces_ptIndxList[j].resize(4);
-            for (int k = 0; k < 4;k++) {
-                mshFaces_ptIndxList[j][k] = -1;
-            }
-        }
-
+  
         if (node->mshFacesList.size() != 0) {
             for (unsigned int j = 0; j < node->mshFacesList.size(); j++) {
                 if (node->mshFacesList[j].ptsList.size() != 0) {
                     for (unsigned int k = 0; k < node->mshFacesList[j].ptIndxList.size(); k++) {
-                        mshFaces_ptIndxList[j][k] = node->mshFacesList[j].ptIndxList[k];
+                        mshFaces_ptIndxList[j].push_back(node->mshFacesList[j].ptIndxList[k]);
                     }
                 } else {
-                    mshFaces_ptIndxList[j].resize(4, 0);
+                    mshFaces_ptIndxList[j].resize(0);
                 }
             }
         }
 
         ostringstream oss;
-        oss << nid << " " << numOfGeoFPts << " " << numOfGeoFEdges << " " << numOfGeoFFaces << " [";
+        oss << nid << " [ " << numOfGeoFFaces << "," << numOfGeoFEdges << "," <<  numOfGeoFPts << " ] [ ";
         for (int j = 0; j < 8; j++) {
             oss << mshPtsIndxList[j] << ",";
         }
-        oss << "] [";
+        oss.seekp(-1, oss.cur);
+        oss << " ] [ ";
 
         for (int j = 0; j < 6; j++) {
             oss << mshFaces_nidList[j] << ",";
         }
-        oss << "] [";
+        oss.seekp(-1, oss.cur);
+        oss << " ] [ ";
 
         for (int j = 0; j < 6; j++) {
-            for (int k = 0; k < 4; k++) {
+            for (int k = 0; k < mshFaces_ptIndxList[j].size(); k++) {
                 oss << mshFaces_ptIndxList[j][k] << ",";
             }
-            oss << "|";
+            oss.seekp(-1, oss.cur);
+            oss << " | ";
         }
+        oss.seekp(-2, oss.cur);
         oss << "]";
         myFile << oss.str() << endl;
         oss.clear();
@@ -161,7 +159,7 @@ void cOctreeUtil::output_octree(const char* _fileName, cOctree* tree)
     myFile.close();
 }
 
-void cOctreeUtil::output_leafNodes(const char* _fileName, vector<cOctNode*> leafNodesList)
+void cOctreeUtil::output_nodes(const char* _fileName, vector<cOctNode*> nodesList)
 {
     ofstream myFile;
     myFile.open(_fileName, ios::ate | ios::out);
@@ -169,16 +167,15 @@ void cOctreeUtil::output_leafNodes(const char* _fileName, vector<cOctNode*> leaf
         cout << "Open file failure" << endl;
     }
     //**********output octree************
-    myFile << "id mshPtIndxList state" << endl;
+    myFile << "id mshVolIndx mshPtIndxList node-state numOfFeatures mshFaces-state mshFaces-ptsIndx" << endl;
     //output 
-    for (unsigned int i = 0; i < leafNodesList.size(); i++) {
-        cOctNode* node = leafNodesList[i];
+    for (unsigned int i = 0; i < nodesList.size(); i++) {
+        cOctNode* node = nodesList[i];
 
         string nid = node->nid;
-
-        int numOfGeoFPts = node->geoFPtsList.size();
-        int numOfGeoFEdges = node->geoFEdgesList.size();
         int numOfGeoFFaces = node->geoFFacesList.size();
+        int numOfGeoFEdges = node->geoFEdgesList.size();
+        int numOfGeoFPts = node->geoFPtsList.size();
 
         vector<int> mshPtsIndxList;
         mshPtsIndxList.resize(8, -1);
@@ -188,14 +185,59 @@ void cOctreeUtil::output_leafNodes(const char* _fileName, vector<cOctNode*> leaf
             }
         }
 
+        vector<string> mshFaces_stateList;
+        mshFaces_stateList.resize(6, "-1");
+        for (int j = 0; j < 6; j++) {
+            mshFaces_stateList[j] = to_string(node->mshFacesList[j].state);
+        }
+
+        vector<vector<int>> mshFaces_ptIndxList;
+        mshFaces_ptIndxList.resize(6);
+        for (int j = 0; j < 6; j++) {
+            mshFaces_ptIndxList[j].resize(0);
+        }
+
+        if (node->mshFacesList.size() != 0) {
+            for (unsigned int j = 0; j < node->mshFacesList.size(); j++) {
+                if (node->mshFacesList[j].ptsList.size() != 0) {
+                    for (unsigned int k = 0; k < node->mshFacesList[j].ptIndxList.size(); k++) {
+                        mshFaces_ptIndxList[j].push_back(node->mshFacesList[j].ptIndxList[k]);
+                    }
+                }
+                else {
+                    mshFaces_ptIndxList[j].resize(0);
+                }
+            }
+        }
+
         ostringstream oss;
         oss << nid << " [ ";
         for (int j = 0; j < 8; j++) {
             oss << mshPtsIndxList[j] << ",";
         }
-        oss << "] ";
+        oss.seekp(-1, oss.cur);
+        oss << " ] ";
         oss << node->state;
-  
+
+        oss << " [ " << numOfGeoFFaces << "," << numOfGeoFEdges << "," << numOfGeoFPts;
+        oss << " ] [ ";
+
+        for (int j = 0; j < 6; j++) {
+            oss << mshFaces_stateList[j] << ",";
+        }
+        oss.seekp(-1, oss.cur);
+        oss << " ] [ ";
+
+        for (int j = 0; j < 6; j++) {
+            for (int k = 0; k < mshFaces_ptIndxList[j].size(); k++) {
+                oss << mshFaces_ptIndxList[j][k] << ",";
+            }
+            oss.seekp(-1, oss.cur);
+            oss << " | ";
+        }
+        oss.seekp(-2, oss.cur);
+        oss << "]";
+
         myFile << oss.str() << endl;
         oss.clear();
     }

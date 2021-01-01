@@ -6,6 +6,8 @@
 #include "cFeature.h"
 #include "cOctree.h"
 #include "commonFunc.h"
+#include "cOctreeOFMesh.h"
+
 //**********************************************************************
 //**********************************************************************
 cBoundary::cBoundary()
@@ -34,13 +36,22 @@ cFace::cFace()
     bFlag=false;
     phyName = "unAssigned";
     phyNameIndx=-100;
-    mshVolIndx = -100;
     state = FaceState::unassigned;
+    exportState = false;
     node=NULL;
 
 }
 
 cFace::~cFace(){}
+
+void cFace::updatePtsList()
+{
+    ptsList.resize(0);
+    for (int indx : ptIndxList) {
+        vector<double> pt = cOctreeOFMesh::getInstance()->mshPtsList[indx];
+        ptsList.push_back(pt);
+    }
+}
 
 void cFace::getN()
 {
@@ -48,16 +59,18 @@ void cFace::getN()
 
     vector<vector<double> > v=ptsList; //3 x 3
     vector<double> v1(3),v2(3),v3;
+    vector<double> center;
 
     // vector 1 = vert 0 - vert 1 (dir 1->0)  ---- vector 2 = vert 0 - vert 2
-    for (unsigned int i=0; i<3; i++) {
-        v1[i] = v[0][i] - v[1][i];
-        v2[i] = v[0][i] - v[2][i]; }
+    center = getCentroid(v);
+    v1 = commonFunc::getInstance()->vectSubtract(v[0],center);
+    v2 = commonFunc::getInstance()->vectSubtract(v[1], center);
     v3 = commonFunc::getInstance()->crossProduct(v1,v2);
     double v3mag = sqrt(commonFunc::getInstance()->dotProduct(v3,v3));
-    N = v3;
-    for (vector<double>::iterator it=N.begin(); it!=N.end(); ++it)
-        *it /= v3mag;
+    N = v3; 
+    for (vector<double>::iterator it = N.begin(); it != N.end(); ++it){ *it /= v3mag; }
+        
+    
 }
 
 double cFace::getAngle(cFace* surface)
@@ -72,17 +85,17 @@ double cFace::getAngle(cFace* surface)
 
 }
 
-vector<double> cFace::getCentroid() {
+vector<double> cFace::getCentroid(vector<vector<double>> _ptsList) {
 	vector<double> pt;
 	pt.resize(3);
-	for(unsigned int i=0; i<ptsList.size();i++){
-		pt[0]+=ptsList[i][0];
-		pt[1]+=ptsList[i][1];
-		pt[2]+=ptsList[i][2];
+	for(unsigned int i=0; i< _ptsList.size();i++){
+		pt[0]+= _ptsList[i][0];
+		pt[1]+= _ptsList[i][1];
+		pt[2]+= _ptsList[i][2];
 	}
-	pt[0]/=ptsList.size();
-	pt[1]/=ptsList.size();
-	pt[2]/=ptsList.size();
+	pt[0]/= _ptsList.size();
+	pt[1]/= _ptsList.size();
+	pt[2]/= _ptsList.size();
 	return pt;
 }
 
@@ -91,7 +104,7 @@ void cFace::findPhyName(vector<cFeatureFace*> _geoFFacesList) {
 	int indx2=-1;
 	getN();
 	vector<double> centroid, pt2;
-	centroid=getCentroid();
+	centroid=getCentroid(ptsList);
 	cLine ray1(centroid,N,1);
 	indx1=findGeoFaceWithMinDist(ray1,_geoFFacesList);
 
@@ -176,7 +189,8 @@ void cFace::changeOrder() {
 int cFace::findFaceRelationship(cFace* f1, cFace* f2) {
 	//assume f1 and f2 are rectangles
 	double tol=1e-6;
-	if(fabs(f1->getAngle(f2)-180)<tol){
+    double angle = fabs(f1->getAngle(f2) - 180);
+	if(angle <tol){
 		if(fabs(f1->low[0]-f2->low[0])<tol && fabs(f1->low[1]-f2->low[1])<tol && fabs(f1->low[2]-f2->low[2])<tol &&
 		   fabs(f1->upp[0]-f2->upp[0])<tol && fabs(f1->upp[1]-f2->upp[1])<tol && fabs(f1->upp[2]-f2->upp[2])<tol)
 		{
@@ -212,6 +226,66 @@ bool cFace::isPtInFace(vector<double> pt) {
 		return false;
 	}
 }
+
+vector<int> cFace::getInFacePts(vector<int> _ptsIndxList)
+{
+    vector<int> inFacePts;
+    vector<double> pt;
+    for (size_t i = 0; i < _ptsIndxList.size();i++) {
+        pt = cOctreeOFMesh::getInstance()->mshPtsList[_ptsIndxList[i]];
+        if (isPtInFace(pt)) {
+            inFacePts.push_back(_ptsIndxList[i]);
+        }
+    }
+    return inFacePts;
+}
+
+vector<int> cFace::getInOrderPts(vector<int> _ptsIndxList)
+{
+    vector<int> inOrderPts;
+
+    //get 3d points
+    vector<vector<double>> givenPts;
+    for (int indx: _ptsIndxList){
+        vector<double> pt = cOctreeOFMesh::getInstance()->mshPtsList[indx];
+        givenPts.push_back(pt);
+    }
+
+    vector<double> center = getCentroid(givenPts);
+    
+    //get angle -> center to point
+    // angle = atan2(det, dot) -> to output angle range (-pi to +pi)
+    // dot = v1 * v2
+    // det = N * (v1 x v2) for 3d points in a plane
+    vector<double> angles;
+    vector<double> startRay= commonFunc::getInstance()->vectSubtract(givenPts[0], center);
+    getN();
+    for (vector<double> pt : givenPts) {
+        vector<double> nextRay=commonFunc::getInstance()->vectSubtract(pt, center);
+        double dot = commonFunc::getInstance()->dotProduct(startRay, nextRay);
+        vector<double> vect = commonFunc::getInstance()->crossProduct(startRay, nextRay);
+        double det = commonFunc::getInstance()->dotProduct(N, vect);
+        double angle = atan2(det, dot);
+        angles.push_back(angle);
+    }
+
+    //sort pairs by angle
+    vector< pair<double, int> > pairs;
+    for (size_t i = 0; i < _ptsIndxList.size();i++) {
+        pairs.push_back(make_pair(angles[i], _ptsIndxList[i]));
+    }
+    
+    sort(pairs.begin(),pairs.end());
+
+
+    //get back ordered indx list
+    for (pair<double, int> p : pairs) {
+        inOrderPts.push_back(p.second);
+    }
+
+    return inOrderPts;
+}
+
 //***********************************************************************
 //**********************************************************************
 
@@ -256,8 +330,6 @@ cOctNode::cOctNode(int _level, string _nid, vector<double> _position, double _si
     calMshPts3D();//based on getLowUppVerts();
     //calMshFaces();//must after calMshPts3D();
     removeExtraFeats();
-    setGeoFFacesIndxList();
-    //geoFFacesIndxList.reserve(MAX_OCTNODE_OBJECTS);
 }
 
 cOctNode::~cOctNode() {
@@ -400,14 +472,6 @@ bool cOctNode::boxRayIntersect(cLine &ray)
     return false;
 }
 
-
-void cOctNode::updateMshFaces_mshVolIndx(int _mshVolIndx)
-{
-    for (unsigned i = 0; i < mshFacesList.size(); i++) {
-        mshFacesList[i].mshVolIndx = _mshVolIndx;
-    }
-}
-
 void cOctNode::calMshFaces()
 {
     for (unsigned int i = 0; i < mshFacesList.size(); i++) {
@@ -503,11 +567,6 @@ void cOctNode::update_MshFaces_PtIndxList() //init eleFaces's ptLabelList
     mshFacesList[5].ptIndxList.push_back(mshPtsIndxList[2]);
 }
 
-void cOctNode::setGeoFFacesIndxList() {
-	for(unsigned int i=0; i< geoFFacesList.size();i++){
-		geoFFacesIndxList.push_back(geoFFacesList[i]->indx);
-		}
-}
 
 //void cOctNode::addGeoFFacesIndx(int _indx) {
 //	geoFFacesIndxList.push_back(_indx);
@@ -544,7 +603,7 @@ void cOctNode::removeExtraFeats() {
             tmpGeoFFacesList.push_back(*it);
         }
     }
-    tmpGeoFFacesList = geoFFacesList;
+    geoFFacesList=tmpGeoFFacesList;
 }
 
 bool cOctNode::isPtInNode(vector<double> pt) {

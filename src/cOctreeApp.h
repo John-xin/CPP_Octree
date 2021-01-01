@@ -18,6 +18,7 @@ using namespace std;
 
 class cOctree;
 class cOctreeUtil;
+class cOctreeOFMesh;
 
 class cOctreeApp {
 public:
@@ -29,44 +30,16 @@ public:
     cGeomData* geom;
     cOctree* octree;
     cOctreeUtil* util;
+    cOctreeOFMesh* ofMesh;
     cOctreeApp();
     ~cOctreeApp();
 
-    //msh data
-    vector<vector<double>> mshPtsList;
-    int mshPtIndxCount = 0;
-    int mshVolIndxCount = 0;
-    //vector<cFace> mshExtFacesList;
-    vector<cFace*> mshIntlFacesList;
-    vector<cFace*> mshBFacesList;
-    vector<cFace*> mshAllFacesList;
-    vector<cBoundary> mshBdsList;
-    int num_mshBFaces, num_mshIntlFaces;
-    //vector<int> eleVolList;
-
     void defineBody(vector<double> _ptInGeom);
     void buildOctree();
-
-    void setup_mshPtList();
-    void addMshPtsOfNode(cOctNode* node);
-    bool isPtSame(vector<double>& pt1, vector<double>& pt2);
-    void setup_nodeMshFaces();
-
-    void setup_boundaryMshFace();
-    void setup_intlMshFace();
-    void findMshIntlFaces();
-    void put2List(int flag, cFace* currentMshFace, cFace* listMshFace);
-
-    void setup_nodePhyName();
-    void setup_mshBdsList();
-
+    void buildOFMesh();
+    
     void saveAsGmsh(const char* _fileName);
     void saveAsOFMesh();
-    void saveAsOFMeshPts();
-    void saveAsOFMeshFaces();
-    void saveAsOFMeshNeis();
-    void saveAsOFMeshOwns();
-    void saveAsOFMeshBds();
 };
 
 #endif

@@ -163,7 +163,6 @@ void cOctree::splitNode(cOctNode* node) {
         node->geoFPtsList.resize(0);
         node->geoFEdgesList.resize(0);
         node->geoFFacesList.resize(0);
-        node->geoFFacesIndxList.resize(0);
 }
 void cOctree::splitOctreeByFeaturePt(cOctNode* node) {
 
@@ -275,7 +274,7 @@ void cOctree::splitNodeByPhyName(string phyName, int level, cOctNode* node) {
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void cOctree::setup_boundaryNode(cOctNode* node) {
 	if (node->isLeafNode()) {
-		if (node->geoFPtsList.size() != 0) {
+		if (node->geoFFacesList.size() != 0) {
 			node->state = NodeState::boundary; //boundary node
 		}
 		else {
@@ -390,6 +389,7 @@ void cOctree::setup_leafNodesList(cOctNode* node) {
 		}
 	}
 }
+
 void cOctree::setup_leafNodesNbr() {
 	//assume node level in the tree is less than one
 	for (unsigned i = 0; i < leafNodesList.size(); i++) {
@@ -617,7 +617,7 @@ void cOctree::getPolysToCheck(cOctNode *node, cLine &ray, set<int> &intTestPolys
         if (node->boxRayIntersect(ray)) {
             if (node->isLeafNode()) {
                 for (int i=0; i<node->numOfGeoFFaces(); i++) {
-                    intTestPolys.insert(node->geoFFacesIndxList[i]); }
+                    intTestPolys.insert(node->geoFFacesList[i]->indx); }
             } else {
                 for (int i=0; i<node->NUM_BRANCHES_OCTNODE; i++) {
                     getPolysToCheck(node->children[i],ray,intTestPolys);

@@ -66,19 +66,24 @@ public:
 	int phyNameIndx;
     vector<double> low;
     vector<double> upp;
-    int mshVolIndx;
     FaceState::FaceState state;
     //1-boundary face ; 0 - internal face
+    bool exportState;
     cOctNode* node;
 
+    void updatePtsList();
     void getN();
     double getAngle(cFace *surface);
-    vector<double> getCentroid();
+    vector<double> getCentroid(vector<vector<double>> _ptsList);
     void findPhyName(vector<cFeatureFace*> _geoFFacesList);
     int findGeoFaceWithMinDist(cLine _ray,vector<cFeatureFace*> _geoFFacesList);
     void changeOrder();
     int findFaceRelationship(cFace* f1, cFace* f2);
     bool isPtInFace(vector<double> pt);
+    
+    vector<int> getInFacePts(vector<int> surrPts);
+    vector<int> getInOrderPts(vector<int> ptsIndxList);
+
 
 };
 
@@ -113,10 +118,6 @@ public:
     vector<cFeatureEdge*> geoFEdgesList; //geom feature edges list
     vector<cFeaturePt*> geoFPtsList; //geom feature pts list
 
-    vector<int> geoFFacesIndxList; //geam tri
-//    vector<int> geoFPtsIndxList; //feature pts
-//    vector<int> geoFEdgesIndxList; //feature geoFEdgesIndxList
-
     vector<vector<double>> mshPts3DList;
     vector<int> mshPtsIndxList;
     vector<bool> mshPtsRepeatedList;
@@ -133,9 +134,7 @@ public:
     int numOfGeoFFaces();
     int numOfGeoFPts();
     int numOfGeoFEdges();
-    //void addGeoFFacesIndx(int _indx);//geom tri
-    //void addGeoFPtsIndx(int _indx);//add feature geoFPtsIndxList
-    void setGeoFFacesIndxList();
+
     void addNode(int _level, string _nid, vector<double> _position, double _size,
     			vector<cFeaturePt*> _geoFPtsList,
     			vector<cFeatureEdge*> _geoFEdgesList,
@@ -147,7 +146,6 @@ public:
     bool boxRayIntersect(cLine &ray);
     bool sphereRayIntersect(cLine &ray);
     void update_MshFaces_PtIndxList();
-    void updateMshFaces_mshVolIndx(int _mshVolIndx);
     void removeExtraFeats();
     bool isPtInNode(vector<double> pt);
 };

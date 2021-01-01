@@ -44,7 +44,7 @@ public:
 	vector<double> vectSubtract( vector<double> &a, vector<double> &b );
 	double dotProduct( vector<double> &v1, vector<double> &v2 );
 	vector<double> crossProduct( vector<double> &v1, vector<double> &v2 );
-
+	double mag(vector<double> &v);
 	//static commonFunc* theCommonFunc;
 
 

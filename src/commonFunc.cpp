@@ -51,6 +51,12 @@ vector<double> commonFunc::crossProduct(vector<double> &v1, vector<double> &v2)
     return cp;
 }
 
+double commonFunc::mag(vector<double>& v)
+{
+    double mag = sqrt(dotProduct(v, v));
+    return mag;
+}
+
 
 vector<double> commonFunc::vectAdd( vector<double> &a, vector<double> &b )
 {

@@ -265,7 +265,7 @@ void cGeomData::setup_geoFPtsList()
     		}
         }
     }
-    std::cout<<"number of feature points is " <<geoFPtsList.size()<<"\n";
+    std::cout<<"number of feature points is " <<geoFPtsList.size()<<"\n\n";
 }
 
 void cGeomData::extractFeature()

@@ -22,6 +22,7 @@ int main()
     //+++++++ cGeomData geom is initialized +++++++++++++
 
     app->buildOctree();
+    app->buildOFMesh();
     app->saveAsOFMesh();
     //commonFunc->output_geoFPtsList(myTree->geoFPtsList, myTree->geoPts3DList);
     ////std::cout<<"NumOfNodes is "<< myTree->countNodes(myTree->root) <<"\n";
