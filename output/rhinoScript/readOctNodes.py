@@ -21,8 +21,8 @@ class srf:
         
 def readPts():
     path=rs.WorkingFolder()
-    filename=rip.RhinoGet.GetFileName(ric.GetFileNameMode.OpenTextFile, "*", "select file",None)
-
+    #filename=rip.RhinoGet.GetFileName(ric.GetFileNameMode.OpenTextFile, "*", "select file",None)
+    filename="../constant/polyMesh/points"
     with open(filename,"r") as f:
         for _ in range(11): #skip first 11 lines
             next(f)
@@ -67,7 +67,9 @@ def readSrfs():
             stateList=dataTMP[9].split(",")
             for i in range(6):
                 data=dataTMP[12+2*i].split(",")
-                indxList=[int(data[0]),int(data[1]),int(data[2]),int(data[3])]
+                indxList=[]
+                for _data in data:
+                    indxList.append(int(_data))
                 state= int(stateList[i])
                 srfsList.append(node(indxList,state))
         f.close()
@@ -98,22 +100,24 @@ def addSrf(srf):
     points=[]
     for indx in srf.indxList:
         points.append(ptsList[indx])
-    if(srf.state==2):
-        rs.AddSrfPt(points)
-        rs.AddText(str(indx)+ "_0",points[0],0.2)
-        rs.AddText(str(indx)+ "_1",points[1],0.2)
-        rs.AddText(str(indx)+ "_2",points[2],0.2)
-        rs.AddText(str(indx)+ "_3",points[3],0.2)
+        if(srf.state==1):
+            rs.AddText(str(indx),ptsList[indx],0.2)
+    
+    points.append(points[0])
+    if(srf.state==1):
+        rs.AddPolyline(points)
+
 
 #AddBrepBox(Rhino.Geometry.Point3d(0, 0, 0),Rhino.Geometry.Point3d(1, 1, 1))
 #sp=rs.AddSphere([0,0,0],1)
 #rs.ObjectColor(sp, [255,0,0])
 #rs.ObjectLayer(objects, layername)
 readPts()
-#readNodes()
-#for node in nodesList:
-#    addBox(node)
 
-readSrfs()
-for srf in srfsList:
-    addSrf(srf)
+readNodes()
+for node in nodesList:
+    addBox(node)
+
+#readSrfs()
+#for srf in srfsList:
+#    addSrf(srf)

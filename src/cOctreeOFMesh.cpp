@@ -37,12 +37,12 @@ void cOctreeOFMesh::setup_mshNodesList()
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void cOctreeOFMesh::setup_mshPtList()
 {
-	for (unsigned i = 0; i < mshNodesList.size(); i++) {
-		if (mshNodesList[i] == NULL) {
-			cout << "setup_mshPtList failed at " << mshNodesList[i]->nid << "\n";
+	for (unsigned i = 0; i < octree->leafNodesList.size(); i++) {
+		if (octree->leafNodesList[i] == NULL) {
+			cout << "setup_mshPtList failed at " << octree->leafNodesList[i]->nid << "\n";
 		}
 		else {
-			addMshPtsOfNode(mshNodesList[i]);
+			addMshPtsOfNode(octree->leafNodesList[i]);
 		}
 	}
 }

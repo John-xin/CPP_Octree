@@ -78,6 +78,7 @@ void cOctreeApp::buildOFMesh()
 	//update own, nei, ptIndxList
 	//setup_boundaryMshFace();
 	util->output_nodes("./output/leafNodes.txt", octree->leafNodesList);
+	util->output_nodes("./output/mshNodes.txt", ofMesh->mshNodesList);
 	std::cout << "mshIntlFacesList length is " << ofMesh->mshIntlFacesList.size() << "\n";
 	std::cout << "mshBFacesList length is " << ofMesh->mshBFacesList.size() << "\n\n";
 	//outputMshFaces(root);
