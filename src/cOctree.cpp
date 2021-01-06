@@ -269,16 +269,71 @@ void cOctree::splitNodeByPhyName(string phyName, int level, cOctNode* node) {
 		}
 	}
 }
+
 // +++++++++ split node
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void cOctree::setup_NodeState(cOctNode* node)
+{
+	if (node->isLeafNode()) {
+		if (node->geoFFacesList.size() != 0) {
+			node->state = NodeState::boundary; //boundary node
+		}
+		else {
+			if (isInteriorNode(node)) {
+				node->state = NodeState::interior;
+			}
+			else {
+				node->state = NodeState::exterior;
+			}
+		}
+	}
+	else {
+		cout << node->nid.c_str() << " is not leaf node, cannot assign node state!!!\n";
+	}
+}
+
+void cOctree::setup_OctreeNodesState()
+{
+	update_leafNodesList();
+
+	for (cOctNode* node : leafNodesList) {
+		setup_NodeState(node);
+	}
+}
+
+void cOctree::splitOctreeByNodeState()
+{
+	vector<cOctNode*> nbr;
+	for (cOctNode* node : leafNodesList) {
+		for (vector<cOctNode*> nbr : node->nbrsList) {
+			if (nbr.size() != 0) {
+				for (size_t i = 0; i < nbr.size(); i++) {
+					if (nbr[i]->state==NodeState::exterior && node->level < nbr[i]->level) {
+						splitNode(node);
+						for (cOctNode* child : node->children) {
+							setup_NodeState(child);
+						}
+					}
+				}
+			}
+		}
+	}
+	update_leafNodesList();
+}
+
 void cOctree::setup_boundaryNode(cOctNode* node) {
 	if (node->isLeafNode()) {
 		if (node->geoFFacesList.size() != 0) {
 			node->state = NodeState::boundary; //boundary node
 		}
 		else {
-			node->state = NodeState::nonBoundary;; //non-boundary node
+			if (isInteriorNode(node)) {
+				node->state = NodeState::interior;
+			}
+			else {
+				node->state = NodeState::exterior;
+			}
 		}
 	}
 	else {
@@ -336,6 +391,7 @@ void cOctree::setup_interiorNode(cOctNode* node) {
 	}
 }
 int cOctree::isInteriorNode(cOctNode* node) {
+	//closed STL -> node center - defined body pt -> ray -> intersections 
 	//assume input STL is closed
     //retrieve a node from nonBNodeslist
 	//make a ray -> node position to defined point
@@ -379,6 +435,11 @@ void cOctree::setup_nbrNodesState(cOctNode* node) {
 	}
 }
 
+void cOctree::update_leafNodesList() {
+	leafNodesList.resize(0);
+	setup_leafNodesList(&root);
+}
+
 void cOctree::setup_leafNodesList(cOctNode* node) {
 	if (node->isLeafNode()) {
 		leafNodesList.push_back(node);
@@ -391,6 +452,7 @@ void cOctree::setup_leafNodesList(cOctNode* node) {
 }
 
 void cOctree::setup_leafNodesNbr() {
+	update_leafNodesList();
 	//assume node level in the tree is less than one
 	for (unsigned i = 0; i < leafNodesList.size(); i++) {
 		cOctNode* node = leafNodesList[i];
@@ -398,6 +460,7 @@ void cOctree::setup_leafNodesNbr() {
 	}
 }
 void cOctree::setLeafNodeNbr(cOctNode* node) {
+
 	node->nbrsList.resize(6);
 	for (unsigned j = 0; j < 6; j++) {
 		node->nbrsList[j].resize(0);

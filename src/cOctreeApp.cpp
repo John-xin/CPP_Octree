@@ -40,11 +40,8 @@ void cOctreeApp::buildOctree() {
 	octree->balanceOctree(&(octree->root));
 	//3. identify boundary / interior / exterior node +++++++++++++++++++++++++++
     //find boundary node if it includes geoFFaces
-	octree->setup_boundaryNode(&(octree->root)); //leaf nodes -> identify boundary / non-boundary node
-    //closed STL -> node center - defined body pt -> ray -> intersections 
-	octree->setup_interiorNode(&(octree->root)); //non-boundary node -> identify interior / exterior node
-	//util->outputNodeName(&(octree->root));
-	octree->setup_leafNodesList(&(octree->root));
+	octree->setup_OctreeNodesState();
+	octree->splitOctreeByNodeState();
 	octree->setup_leafNodesNbr();//n*logN - set nbrs for all leafNodes
     
 	//split nbrs fo extNode to same level as extNode

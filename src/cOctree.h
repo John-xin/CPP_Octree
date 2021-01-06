@@ -85,12 +85,16 @@ public:
     void splitExtNodeNbr(cOctNode* node);
     void update_allNodesList(cOctNode* node);
     void splitNodeByPhyName(string phyName, int level, cOctNode* node);
+    void setup_NodeState(cOctNode* node);
+    void setup_OctreeNodesState();
+    void splitOctreeByNodeState();
     void setup_boundaryNode(cOctNode* node);
     void setup_interiorNode(cOctNode* node);
     int isInteriorNode(cOctNode* node);
     void setup_nbrNodesState(cOctNode* node);
 
     void setup_leafNodesList(cOctNode* node);
+    void update_leafNodesList();
     void setup_leafNodesNbr();
     void setLeafNodeNbr(cOctNode* node);
     void delExtNodes();
