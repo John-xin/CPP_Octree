@@ -1,0 +1,117 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      blockMeshDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+backgroundMesh
+{
+    xMin -50;
+    xMax 50;
+    yMin -50;
+    yMax 50;
+    zMin 0;
+    zMax 50;
+    xCells 10;
+    yCells 10;
+    zCells 5;
+}
+
+convertToMeters 1;
+
+vertices
+(
+    ($:backgroundMesh.xMin $:backgroundMesh.yMin $:backgroundMesh.zMin)
+    ($:backgroundMesh.xMax $:backgroundMesh.yMin $:backgroundMesh.zMin)
+    ($:backgroundMesh.xMax $:backgroundMesh.yMax $:backgroundMesh.zMin)
+    ($:backgroundMesh.xMin $:backgroundMesh.yMax $:backgroundMesh.zMin)
+
+    ($:backgroundMesh.xMin $:backgroundMesh.yMin $:backgroundMesh.zMax)
+    ($:backgroundMesh.xMax $:backgroundMesh.yMin $:backgroundMesh.zMax)
+    ($:backgroundMesh.xMax $:backgroundMesh.yMax $:backgroundMesh.zMax)
+    ($:backgroundMesh.xMin $:backgroundMesh.yMax $:backgroundMesh.zMax)
+);
+
+blocks
+(
+    hex (0 1 2 3 4 5 6 7)
+    (
+        $:backgroundMesh.xCells
+        $:backgroundMesh.yCells
+        $:backgroundMesh.zCells
+    )
+    simpleGrading (
+        ((0.3 0.3 0.8264) (0.4 0.4 1) (0.3 0.3 1.21))
+        ((0.3 0.3 0.8264) (0.4 0.4 1) (0.3 0.3 1.21))
+        ((0.4 0.4 1) (0.6 0.6 1.21))
+    )
+);
+
+edges
+(
+);
+
+boundary
+(
+    w
+    {
+        type patch;
+        faces
+        (
+            (0 3 7 4)
+        );
+    }
+
+    e
+    {
+        type patch;
+        faces
+        (
+            (1 5 6 2)
+        );
+    }
+
+    ground
+    {
+        type wall;
+        faces
+        (
+            (0 1 2 3)
+        );
+    }
+    
+   s
+    {
+        type patch;
+        faces
+        (
+            (0 4 5 1)
+        );
+    }
+    
+   n
+    {
+        type patch;
+        faces
+        (
+            (3 2 6 7)
+        );
+    }
+
+    top
+    {
+        type patch;
+        faces
+        (
+            (4 7 6 5)
+        );
+    }
+
+);
+
+mergePatchPairs
+(
+);

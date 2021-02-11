@@ -1,0 +1,157 @@
+#ifndef COCTNODE_H
+#define COCTNODE_H
+
+#include <iostream>
+#include <vector>
+#include <set>
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+#include <string>
+#include <sstream>
+#include <algorithm> // find, sort
+#include <utility>   // pair
+
+
+// OpenMP headers
+#ifdef _OPENMP
+  #include <omp.h>
+#endif
+
+using namespace std;
+
+class cFeaturePt;
+class cFeatureEdge;
+class cFeatureFace;
+class cLine;
+class cFace;
+class cOctNode;
+
+//**********************************************************************
+//**********************************************************************
+class cBoundary {
+public:
+    cBoundary();
+    ~cBoundary();
+    
+    string phyName;
+    int phyNameIndx;
+    vector<cFace*> mshFacesList;
+    string patchType;
+    int startFace;
+    int nFaces;
+};
+//**********************************************************************
+//**********************************************************************
+namespace FaceState {
+    enum FaceState { unassigned = 0, boundary, internal };
+}
+class cFace{
+public:
+	cFace();
+	~cFace();
+	string nid;
+	int nbr; //neighbour
+	int own; //owner
+	int label;
+	int nPts;
+	vector<vector<double> > ptsList;
+	vector<int> ptIndxList;
+	vector<double> N;
+	vector<double> centroid;
+
+
+	bool bFlag; //boundary flag;
+	string phyName;
+	int phyNameIndx;
+    vector<double> low;
+    vector<double> upp;
+    FaceState::FaceState state;
+    //1-boundary face ; 0 - internal face
+    bool exportState;
+    cOctNode* node;
+
+    void updatePtsList();
+    void getN();
+    double getAngle(cFace *surface);
+    vector<double> getCentroid(vector<vector<double>> _ptsList);
+    void findPhyName(vector<cFeatureFace*> _geoFFacesList);
+    int findGeoFaceWithMinDist(cLine _ray,vector<cFeatureFace*> _geoFFacesList);
+    void changeOrder();
+    int findFaceRelationship(cFace* f1, cFace* f2);
+    bool isPtInFace(vector<double> pt);
+    
+    vector<int> getInFacePts(vector<int> surrPts);
+    vector<int> getInOrderPts(vector<int> ptsIndxList);
+
+
+};
+
+//**********************************************************************
+//**********************************************************************
+ namespace NodeState {
+    enum NodeState { unassigned = 0, boundary, nonBoundary, interior, exterior };
+}
+
+class cOctNode {
+public:
+
+    //static const int MAX_OCTNODE_OBJECTS  = 1;
+    static const int NUM_BRANCHES_OCTNODE = 8;
+      
+    double size; //node cube length
+    int level;
+    int depth;
+    string nid;
+    vector<double> position; //assigned from constructor
+    vector<cOctNode*> children;
+    cOctNode* parent;
+    vector<vector<cOctNode*>> nbrsList; //0-s 1-e 2-n 3-w 4-t 5-b
+
+    vector<double> low, upp;
+    int mshVolIndx;
+    NodeState::NodeState state;
+    //1 - boundary node; 0 - non-boundary node;
+    //1 - interior node; 0 - exterior node;
+
+    vector<cFeatureFace*> geoFFacesList; //geom feature faces list
+    vector<cFeatureEdge*> geoFEdgesList; //geom feature edges list
+    vector<cFeaturePt*> geoFPtsList; //geom feature pts list
+
+    vector<vector<double>> mshPts3DList;
+    vector<int> mshPtsIndxList;
+    vector<bool> mshPtsRepeatedList;
+    vector<cFace> mshFacesList;//element faces
+
+    cOctNode();
+    cOctNode(int _level, string _nid, vector<double> _position, double _size,
+    		vector<cFeaturePt*> _geoFPtsList,
+    		vector<cFeatureEdge*> _geoFEdgesList,
+    		vector<cFeatureFace*> _geoFFacesList,
+    		cOctNode* _parent);
+    ~cOctNode();
+    bool isLeafNode();
+    int numOfGeoFFaces();
+    int numOfGeoFPts();
+    int numOfGeoFEdges();
+
+    void addNode(int _level, string _nid, vector<double> _position, double _size,
+    			vector<cFeaturePt*> _geoFPtsList,
+    			vector<cFeatureEdge*> _geoFEdgesList,
+    			vector<cFeatureFace*> _geoFFacesList,
+    			cOctNode* _parent);
+    void getLowUppVerts();//calc low and upp by position
+    void calMshPts3D();
+    void calMshFaces();
+    bool boxRayIntersect(cLine &ray);
+    bool sphereRayIntersect(cLine &ray);
+    void update_MshFaces_PtIndxList();
+    void removeExtraFeats();
+    bool isPtInNode(vector<double> pt);
+};
+
+
+
+
+// 
+#endif

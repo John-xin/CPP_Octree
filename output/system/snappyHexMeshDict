@@ -1,0 +1,181 @@
+FoamFile   
+{   
+ version  4.0;
+ format  ascii;
+ class  dictionary;
+ location system; 
+ object  snappyHexMeshDict;
+}   
+
+castellatedMesh     on;
+snap                on;
+addLayers           off;
+
+geometry
+{
+    bldg1.stl
+    {
+         type    triSurfaceMesh;
+         name    bldg1;
+         regions{ OBJECT{name    bldg1;}}
+    }
+
+    bldg2.stl
+    {
+         type    triSurfaceMesh;
+         name    bldg2;
+         regions{ OBJECT{name    bldg2;}}
+    }
+
+    ref1.stl
+    {
+         type    triSurfaceMesh;
+         name    ref1;
+    }
+
+}
+
+castellatedMeshControls
+{
+        maxLocalCells           1000000;
+        maxGlobalCells          10000000;
+        minRefinementCells      10;
+        maxLoadUnbalance        0.10;
+        nCellsBetweenLevels     3; 
+        resolveFeatureAngle     45; 
+        locationInMesh          (0 0 20); 
+        allowFreeStandingZoneFaces     true;
+
+        features        
+        (
+            {file"bldg1.eMesh"; level 0;}
+            {file"bldg2.eMesh"; level 0;}
+        );
+
+    refinementSurfaces
+   {
+    bldg1
+    {
+            level       (0 0);
+            regions{OBJECT{level    (3 3);}}
+    }
+    bldg2
+    {
+            level       (0 0);
+            regions{OBJECT{level    (3 3);}}
+    }
+    }
+
+    refinementRegions
+   {
+    ref1
+    {
+            levels       ((0 0));
+            mode        inside;
+    }
+    }
+}
+
+
+snapControls
+{
+        nSmoothPatch  3;
+        tolerance     1;
+        nSolveIter    1;
+        nRelaxIter    1;
+        nFeatureSnapIter  5;
+        extractFeaturesRefineLevel  on;
+        explicitFeatureSnap  on;
+        implicitFeatureSnap  off;
+}
+
+
+addLayersControls  
+{
+        relativeSizes  on;
+        expansionRatio  1;
+        finalLayerThickness  0.1;
+        minThickness  0.01;
+        featureAngle  270;
+        layers{ 
+                    ground{nSurfaceLayers  6;}
+                    top{nSurfaceLayers  6;}
+                    n{nSurfaceLayers  6;}
+                    s{nSurfaceLayers  6;}
+                    e{nSurfaceLayers  6;}
+                    w{nSurfaceLayers  6;}
+                    bldg1{nSurfaceLayers  6;}
+                    bldg2{nSurfaceLayers  6;}
+        }
+    nGrow  1;
+    slipFeatureAngle 30;
+    nRelaxIter  3;
+  
+    nSmoothSurfaceNormals  1;
+  
+    nSmoothThickness  10;
+  
+    nSmoothNormals  3;
+  
+    maxFaceThicknessRatio  0.5;
+  
+    maxThicknessToMedialRatio  0.3;
+  
+    minMedianAxisAngle  130;
+  
+    nBufferCellsNoExtrude  0;
+  
+    nLayerIter  50;
+  
+    nRelaxedIter  20;
+  
+}  
+  
+meshQualityControls  
+{  
+  
+    maxNonOrtho  60;
+  
+    maxBoundarySkewness  20;
+  
+    maxInternalSkewness  4;
+  
+    maxConcave  80;
+  
+    minFlatness  0.5;
+  
+    minVol  1e-13;
+  
+    minTetQuality  1e-15;
+  
+    minArea  -1;
+  
+    minTwist  0.02;
+  
+    minDeterminant  0.001;
+  
+    minFaceWeight  0.02;
+  
+    minVolRatio  0.01;
+  
+    minTriangleTwist  -1;
+  
+    nSmoothScale  4;
+  
+    errorReduction  0.75;
+  
+    relaxed  
+    {  
+  
+        maxNonOrtho  75;
+  
+    }  
+  
+}  
+  
+debug  0;
+  
+mergeTolerance  1E-6;
+}
+
+
