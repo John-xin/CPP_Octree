@@ -35,14 +35,15 @@ void cOctreeOFMesh::setup_mshNodesList()
 }
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void cOctreeOFMesh::setup_mshPtList()
+void cOctreeOFMesh::setup_mshPtList(vector<cOctNode*> nodesList)
 {
-	for (unsigned i = 0; i < mshNodesList.size(); i++) {
-		if (mshNodesList[i] == NULL) {
-			cout << "setup_mshPtList failed at " << mshNodesList[i]->nid << "\n";
+	mshPtsList.resize(0);
+	for (unsigned i = 0; i < nodesList.size(); i++) {
+		if (nodesList[i] == NULL) {
+			cout << "setup_mshPtList failed at " << nodesList[i]->nid << "\n";
 		}
 		else {
-			addMshPtsOfNode(mshNodesList[i]);
+			addMshPtsOfNode(nodesList[i]);
 		}
 	}
 }
@@ -250,6 +251,9 @@ void cOctreeOFMesh::setup_nodeMshFaceState()
 					}
 					else {
 						nbrMshFace = (&nbr[k]->mshFacesList[indxArr[j]]);
+						if (currentMshFace->nid=="unAssigned" || nbrMshFace->nid == "unAssigned") {
+							cout << ":";
+						}
 						int flag = currentMshFace->findFaceRelationship(currentMshFace, nbrMshFace);
 						saveInterlMshFaces(flag, currentMshFace, nbrMshFace);
 					}

@@ -276,7 +276,7 @@ void cOctreeUtil::checkNodes_ErrorType1(vector<cOctNode*> nodesList)
         possibleErrorNodes.pop();
     }
    
-    cout << "Check Error Type1: Number of error nodes are " << errorNodesCount <<"\n";
+    cout << "Check Error Type1: Number of error nodes is " << errorNodesCount <<"\n";
     octree->update_leafNodesList(&(octree->root));
 }
 
@@ -318,17 +318,9 @@ vector<cOctNode*>  cOctreeUtil::fix_ErrorType1(cOctNode* node)
         //1. Address error node by split the node to same level of the nbr node
         octree->splitNode(node);
 
-        //2. Setup the new split nodes
-        for (cOctNode* child : node->children) {
-            octree->setup_boundaryNode(child);
-            octree->setup_interiorNode(child);
-            octree->setLeafNodeNbr(child);
-        }
-
         //3. Repair the nbr relationship of the split node's nbrs and introduce new possible error nodes to check
         vector<cOctNode*> nbr6Nodes = octree->getNbr6Nodes(node);
         for (cOctNode* myNode : nbr6Nodes) {
-            octree->setLeafNodeNbr(myNode);
             if (myNode->isLeafNode()) {
                 possibleErrorNodes.push_back(myNode);
             }

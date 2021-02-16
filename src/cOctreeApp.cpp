@@ -33,22 +33,29 @@ void cOctreeApp::buildOctree() {
 
     //2. +++++++++++++++++++++++++++
 	octree->splitOctreeByMinLevel(&(octree->root));
-	//util->output_octree("./output/byMinLevel_octree.txt", octree);
+	util->output_octree("./output/byMinLevel_octree.txt", octree);
+	//octree->getNbr18Nodes(&(octree->root));
 	octree->splitOctreeByFeaturePt(&(octree->root));
 	//util->output_octree("./output/byFeaturePt_octree.txt", octree);
     //splitNodeByPhyName("bldg",6,&root);
 	octree->getOctreeDepth(&(octree->root));
-	octree->balanceOctree(&(octree->root));
+	//octree->balanceOctree(&(octree->root));
 	//3. identify boundary / interior / exterior node +++++++++++++++++++++++++++
     //find boundary node if it includes geoFFaces
-	octree->setup_boundaryNode(&(octree->root)); //leaf nodes -> identify boundary / non-boundary node
+	//octree->setup_boundaryNode(&(octree->root)); //leaf nodes -> identify boundary / non-boundary node
     //closed STL -> node center - defined body pt -> ray -> intersections 
-	octree->setup_interiorNode(&(octree->root)); //non-boundary node -> identify interior / exterior node
+	//octree->setup_interiorNode(&(octree->root)); //non-boundary node -> identify interior / exterior node
 	//util->outputNodeName(&(octree->root));
 	octree->setup_leafNodesList(&(octree->root));
-	octree->setup_leafNodesNbr();//n*logN - set nbrs for all leafNodes
+	//octree->setup_leafNodesNbr();//n*logN - set nbrs for all leafNodes
     
-	util->checkNodes_ErrorType1(octree->leafNodesList);
+    util->checkNodes_ErrorType1(octree->leafNodesList);
+
+	//*******note this********
+	//octree->setup_boundaryNode(&(octree->root));
+	//octree->setup_interiorNode(&(octree->root));
+	//octree->setup_leafNodesNbr();
+
 
 
 	//split nbrs fo extNode to same level as extNode
@@ -61,16 +68,19 @@ void cOctreeApp::buildOFMesh()
 {
 	ofMesh->setup_octree(octree);
 	ofMesh->setup_mshNodesList();
-
+	cout << "num of mshNodes is " << ofMesh->mshNodesList.size() << "\n";
 	//4. +++++++++++++++++++++++++++
     //from leaf nodes -> identify non-repeated mshPt
-	ofMesh->setup_mshPtList();
+	ofMesh->setup_mshPtList(octree->leafNodesList);
+	//ofMesh->setup_mshPtList(ofMesh->mshNodesList);
+
+	//ofMesh->setup_mshPtList(ofMesh->mshNodesList);
 	cout << "num of mshPts is " << ofMesh->mshPtsList.size() << "\n";
 	//from leaf nodes -> define node -> 6 faces by mshPt index
     //init mshFace -> own, nid, low, upp, ptIndxList
     //and mark mshVolIndx
-	ofMesh->setup_nodeMshFaces();
-	ofMesh->update_nodeMshFaces();
+	ofMesh->setup_nodeMshFaces();//setup mshFaces with 4 pts
+	ofMesh->update_nodeMshFaces();//update mshFaces with actual pts
 	ofMesh->setup_nodeMshFaceState();
 
 	//std::cout<<"bNodesList length is "<< bNodesList.size() <<"\n";

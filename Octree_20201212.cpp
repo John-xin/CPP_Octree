@@ -10,14 +10,15 @@ using namespace std;
 
 int main()
 {
-    const char* fileName = "./etc/simple_bldg_oneName.stl"; //or const char* fileName ="F:\\Project\\cpluplus\\Eclipse_Proj\\Octree\\Octree\\cube_1m.stl";  
+    const char* fileName = "./etc/APR1st_Cube_Case_combined.stl"; //or const char* fileName ="F:\\Project\\cpluplus\\Eclipse_Proj\\Octree\\Octree\\cube_1m.stl";  
  
     cOctreeApp* app = new cOctreeApp();
 
     //+++++++ cGeomData geom is initialized +++++++++++++
     app->geom->readSTLData(fileName);
     app->geom->extractFeature();
-    vector<double> pt3D{ 0.15,0.5,0.1 };
+    //vector<double> pt3D{ 0.15,0.5,0.1 };
+    vector<double> pt3D{ 7,7,7 };
     app->defineBody(pt3D);
     //+++++++ cGeomData geom is initialized +++++++++++++
 

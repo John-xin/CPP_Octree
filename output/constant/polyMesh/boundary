@@ -7,20 +7,34 @@ FoamFile
     object      boundary;
 }
 
-2
+4
 (
-	OBJECT
+	bldg
 	{
 		type    unAssigned;
-		nFaces    665;
-		startFace    2398;
+		nFaces    36;
+		startFace    2870;
+	}
+
+	ground
+	{
+		type    unAssigned;
+		nFaces    159;
+		startFace    2906;
+	}
+
+	box
+	{
+		type    unAssigned;
+		nFaces    717;
+		startFace    3065;
 	}
 
 	unAssigned
 	{
 		type    unAssigned;
-		nFaces    20;
-		startFace    3063;
+		nFaces    248;
+		startFace    3782;
 	}
 
 )

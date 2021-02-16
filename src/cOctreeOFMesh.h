@@ -29,7 +29,7 @@ public:
 
     void setup_octree(cOctree* _octree);
     void setup_mshNodesList();
-    void setup_mshPtList();
+    void setup_mshPtList(vector<cOctNode*> nodesList);
     void addMshPtsOfNode(cOctNode* node);
     bool isPtSame(vector<double>& pt1, vector<double>& pt2);
     void setup_nodeMshFaces();

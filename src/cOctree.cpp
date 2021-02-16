@@ -143,26 +143,75 @@ vector<double> cOctree::setCustomPosition(double x,double y,double z) {
 }
 // +++++ setup root
 
+void cOctree::cutNode(cOctNode* node)
+{
+	vector<double> newPos;
+	newPos.resize(3);
+	for (int i = 0; i < node->NUM_BRANCHES_OCTNODE; i++) {
+		for (int j = 0; j < 3; j++) {
+			newPos[j] = node->position[j] + 0.25 * node->size * branchOffsets[i][j];
+		}
+		string nid = node->nid + "-" + commonFunc::getInstance()->NumberToString(i);
+		node->addNode(node->level + 1, nid, newPos, 0.5 * node->size,
+			node->geoFPtsList,
+			node->geoFEdgesList,
+			node->geoFFacesList,
+			node);
+	}
+
+	for (cOctNode* child : node->children) {
+		setup_boundaryNode(child);
+		setup_interiorNode(child);
+	}
+
+	node->geoFPtsList.resize(0);
+	node->geoFEdgesList.resize(0);
+	node->geoFFacesList.resize(0);
+}
+
 // +++++++++ split node
 void cOctree::splitNode(cOctNode* node) {
-        // Split node into 8 branches
-        vector<double> newPos;
-        newPos.resize(3);
-        for (int i=0; i<node->NUM_BRANCHES_OCTNODE; i++) {
-            for(int j=0; j<3; j++) {
-                newPos[j] = node->position[j] + 0.25*node->size*branchOffsets[i][j];
-            }
-            string nid = node->nid + "-" + commonFunc::getInstance()->NumberToString(i);
-            node->addNode(node->level+1,nid,newPos,0.5*node->size,
-            			 node->geoFPtsList,
-            			 node->geoFEdgesList,
-            			 node->geoFFacesList,
-            			 node);
-        }
+	vector<cOctNode*> nodesList;
+    // Split node into 8 branches
+	cutNode(node);
+	for (cOctNode* child : node->children) {
+		nodesList.push_back(child);
+	}
+	
+	// if the node level is larger than the min-octree level, then make the nbr nodes balance to 2:1
+	// e.g. cut node is level 2, min level is 1. After cutting, node's children is level 3, the octree becomes 3:1 
+	if (node->level - MIN_OCTREE_LEVELS >= 1) {
+		vector<cOctNode*> nbrNodes = getNbr18Nodes(node);
+		for (cOctNode* nbrNode : nbrNodes) {
+			if (node->level - nbrNode->level >= 1) {
+				cutNode(nbrNode);
 
-        node->geoFPtsList.resize(0);
-        node->geoFEdgesList.resize(0);
-        node->geoFFacesList.resize(0);
+				for (cOctNode* child : nbrNode->children) {
+					nodesList.push_back(child);
+				}
+
+				vector<cOctNode*> nbr6Nodes = getNbr6Nodes(nbrNode);
+				for (cOctNode* myNode : nbr6Nodes) {
+					nodesList.push_back(myNode);
+				}
+			}
+		}
+	}
+	//deal with nbr setting
+	//need to optimize. there are many repeated nodes in the list
+	vector<cOctNode*> nbr6Nodes = getNbr6Nodes(node);
+	for (cOctNode* myNode : nbr6Nodes) {
+		nodesList.push_back(myNode);
+	}
+
+
+	for (cOctNode* myNode : nodesList) {
+		if (myNode->nid=="0-1-6") {
+			cout << "";
+		}
+		setLeafNodeNbr(myNode);
+	}
+
 }
 void cOctree::splitOctreeByFeaturePt(cOctNode* node) {
 
@@ -177,20 +226,17 @@ void cOctree::splitOctreeByFeaturePt(cOctNode* node) {
 void cOctree::splitNodeByFeaturePt(cOctNode *node)
 {
 	if (node->numOfGeoFPts()> MAX_OCTNODE_FEATS && node->level<MAX_OCTREE_LEVELS){
-	        // Split node into 8 branches
-	        splitNode(node);
+		// Split node into 8 branches
+		splitNode(node);
 
-	        // Reallocate date from node to branches
-	        for (int i=0; i<node->NUM_BRANCHES_OCTNODE; i++) {
-	            if (node->children[i]->numOfGeoFPts()> MAX_OCTNODE_FEATS  && node->children[i]->level<MAX_OCTREE_LEVELS)
-	            {
-	            	splitNodeByFeaturePt(node->children[i]);
-	            }
-	        }
-	    }
+		// Reallocate date from node to branches
+		for (int i = 0; i < node->NUM_BRANCHES_OCTNODE; i++) {
+			splitNodeByFeaturePt(node->children[i]);
+		}
+	}
 }
 void cOctree::splitOctreeByMinLevel(cOctNode* node) {
-
+	//this sets global nodes level
 	if(node->isLeafNode()){
 		splitNodeByLevel(MIN_OCTREE_LEVELS,node);
 	} else{
@@ -206,9 +252,7 @@ void cOctree::splitNodeByLevel(int level, cOctNode *node)
 		splitNode(node);
         // split child node until min level
         for (int i=0; i<node->NUM_BRANCHES_OCTNODE; i++) {
-            if (node->children[i]->level < level) {
-                    splitNodeByLevel(level, node->children[i]);
-                }
+            splitNodeByLevel(level, node->children[i]);
         }
     }
 }
@@ -232,6 +276,72 @@ void cOctree::balanceOctree(cOctNode* node) {
 			balanceOctree(node->children[i]);
 		}
 	}
+}
+
+void cOctree::balOctree2to1(vector<cOctNode*> nodesList)
+{
+	int checkCount = 0;
+	queue<cOctNode*> toCheckNodes;
+	for (cOctNode* node : nodesList) {
+		toCheckNodes.push(node);
+	}
+
+	while (toCheckNodes.size() != 0) {
+		cOctNode* myNode = toCheckNodes.front();
+		if (myNode->isLeafNode()) {
+			if (!is2to1Bal(myNode)) {
+				splitNodeBy2to1Bal(myNode);
+				vector<cOctNode*> introducedNodes = getNbr6Nodes(myNode);
+				checkCount++;
+				for (cOctNode* node : introducedNodes) {
+					toCheckNodes.push(node);
+				}
+			}
+		}
+		toCheckNodes.pop();
+	}
+
+	cout << "Check 2to1Bal: Number of nodes made 2to1 is " << checkCount << "\n";
+	update_leafNodesList(&root);
+}
+bool cOctree::is2to1Bal(cOctNode* node)
+{
+	//if any nbr level - node level > 1 then 2to1 Bal test is false
+	for (vector<cOctNode*> nbr : node->nbrsList) {
+		for (cOctNode* nbrNode : nbr) {
+			if (nbrNode->level - node->level > 1) {
+				return false;
+			}
+		}
+	}
+	return true;
+}
+void cOctree::splitNodeBy2to1Bal(cOctNode* node)
+{
+	if (node->isLeafNode()) {
+		splitNode(node);
+		//2. Setup the new split nodes
+		
+		for (cOctNode* child : node->children) {
+				setup_boundaryNode(child);
+				setup_interiorNode(child);
+				setLeafNodeNbr(child);
+		}
+
+		//3. Repair the nbr relationship of the split node's nbrs and introduce new possible error nodes to check
+		vector<cOctNode*> nbr6Nodes = getNbr6Nodes(node);
+		for (cOctNode* myNode : nbr6Nodes) {
+			setLeafNodeNbr(myNode);
+		}
+		//4. check children
+		for (cOctNode* child : node->children) {
+			if (!is2to1Bal(node->children[0])) {
+				splitNodeBy2to1Bal(child);
+			}
+		}
+	}
+
+
 }
 void cOctree::splitNodeByLevelDiff(int lvlDiff, cOctNode *node){
 	if (depth- node->level > lvlDiff){
@@ -381,13 +491,100 @@ void cOctree::setup_nbrNodesState(cOctNode* node) {
 
 vector<cOctNode*> cOctree::getNbr6Nodes(cOctNode* node)
 {
+	//get nbrs by moving center pt to a circle edge with a radius of 0.75 * size
+	//prerequisite:
+	//1. octree must be 2to1 balance
+	//2. node must be a cube
+
+	vector<vector <double> > vect(6);
+	for (int i = 0; i < 6; i++) {
+		vect[i].resize(3);
+	}
+	double r = 0.75 * node->size;
+	vect[0] = { 0, -r, 0 };//nbr s
+	vect[1] = { r, 0, 0 };//nbr e
+	vect[2] = { 0,  r, 0 };//nbr n
+	vect[3] = { -r, 0, 0 };//nbr w
+	vect[4] = { 0, 0,  r };//nbr t
+	vect[5] = { 0, 0, -r };//nbr b
+
 	vector<cOctNode*> nbr6Nodes;
-	for (vector<cOctNode*> nbr : node->nbrsList) {
-		for (cOctNode* nbrNode : nbr) {
-			nbr6Nodes.push_back(nbrNode);
+	for (int j = 0; j < 6; j++) {
+		vector<double> pt = node->position;
+		pt = commonFunc::getInstance()->vectAdd(pt, vect[j]);
+
+		//return list of nodes for each nbr, e.g. low-level node nbr has 4  high-level nodes
+		//0-s 1-e 2-n 3-w 4-b 5-t
+		vector<cOctNode*> nbrNodes = getLeafNodeByPt(pt, &root);
+		for (cOctNode* nbrNode : nbrNodes) {
+			bool flag = true;
+			for (cOctNode* aNode : nbr6Nodes) {
+				if (nbrNode->nid == aNode->nid) {
+					flag = false;
+				}
+			}
+			if (flag) {
+				nbr6Nodes.push_back(nbrNode);
+			}
 		}
 	}
 	return nbr6Nodes;
+}
+
+vector<cOctNode*> cOctree::getNbr18Nodes(cOctNode* node)
+{
+	//get nbrs by moving center pt to a circle edge with a radius of 0.75 * size
+	//prerequisite:
+	//1. octree must be 2to1 balance
+	//2. node must be a cube
+
+	vector<vector <double> > vect(18);
+	for (int i = 0; i < 18; i++) {
+		vect[i].resize(3);
+	}
+	double r = 0.75*node->size;
+	double pi = 3.1415;
+	vect[0] = { 0, -r, 0 };//nbr s
+	vect[1] = {  r, 0, 0 };//nbr e
+	vect[2] = { 0,  r, 0 };//nbr n
+	vect[3] = { -r, 0, 0 };//nbr w
+	vect[4] = { 0, 0,  r };//nbr t
+	vect[5] = { 0, 0, -r };//nbr b
+
+	vect[6] = { r * sin(pi * 0.25), -r * cos(pi * 0.25), 0 };//nbr z-se
+	vect[7] = { r * sin(pi * 0.75), -r * cos(pi * 0.75), 0 };//nbr z-ne
+	vect[8] = { r * sin(pi * 1.25), -r * cos(pi * 1.25), 0 };//nbr z-nw
+	vect[9] = { r * sin(pi * 1.75), -r * cos(pi * 1.75), 0 };//nbr z-sw
+	vect[10] = { 0, r * sin(pi * 0.25), -r * cos(pi * 0.25) };//nbr x-bn
+	vect[11] = { 0, r * sin(pi * 0.75), -r * cos(pi * 0.75) };//nbr x-tn
+	vect[12] = { 0, r * sin(pi * 1.25), -r * cos(pi * 1.25) };//nbr x-ts
+	vect[13] = { 0, r * sin(pi * 1.75), -r * cos(pi * 1.75) };//nbr x-bs
+	vect[14] = { r * sin(pi * 0.25), 0, -r * cos(pi * 0.25) };//nbr y-be
+	vect[15] = { r * sin(pi * 0.75), 0, -r * cos(pi * 0.75) };//nbr y-te
+	vect[16] = { r * sin(pi * 1.25), 0, -r * cos(pi * 1.25) };//nbr y-tw
+	vect[17] = { r * sin(pi * 1.75), 0, -r * cos(pi * 1.75) };//nbr y-bw
+
+	vector<cOctNode*> nbr18Nodes;
+	for (int j = 0; j < 18; j++) {
+		vector<double> pt = node->position;
+		pt = commonFunc::getInstance()->vectAdd(pt, vect[j]);
+
+		//return list of nodes for each nbr, e.g. low-level node nbr has 4  high-level nodes
+		//0-s 1-e 2-n 3-w 4-b 5-t
+		vector<cOctNode*> nbrNodes = getLeafNodeByPt(pt, &root);
+		for (cOctNode* nbrNode : nbrNodes) {
+			bool flag = true;
+			for (cOctNode* aNode: nbr18Nodes) {
+				if (nbrNode->nid==aNode->nid) {
+					flag = false;
+				}
+			}
+			if (flag) {
+				nbr18Nodes.push_back(nbrNode);
+			}	
+		}
+	}
+	return nbr18Nodes;
 }
 
 void cOctree::setup_leafNodesList(cOctNode* node) {
@@ -420,36 +617,18 @@ void cOctree::setLeafNodeNbr(cOctNode* node) {
 	for (unsigned j = 0; j < 6; j++) {
 		node->nbrsList[j].resize(0);
 	}
+
 	vector<vector <double> > vect(6);
-	vect[0].resize(3);//nbr s
-	vect[0][0] = 0;
-	vect[0][1] = -0.75 * node->size;
-	vect[0][2] = 0;
-
-	vect[1].resize(3);//nbr e
-	vect[1][0] = 0.75 * node->size;
-	vect[1][1] = 0;
-	vect[1][2] = 0;
-
-	vect[2].resize(3);//nbr n
-	vect[2][0] = 0;
-	vect[2][1] = 0.75 * node->size;
-	vect[2][2] = 0;
-
-	vect[3].resize(3);//nbr w
-	vect[3][0] = -0.75 * node->size;
-	vect[3][1] = 0;
-	vect[3][2] = 0;
-
-	vect[4].resize(3);//nbr t
-	vect[4][0] = 0;
-	vect[4][1] = 0;
-	vect[4][2] = 0.75 * node->size;
-
-	vect[5].resize(3);//nbr b
-	vect[5][0] = 0;
-	vect[5][1] = 0;
-	vect[5][2] = -0.75 * node->size;
+	for (int i = 0; i < 6; i++) {
+		vect[i].resize(3);
+	}
+	double r = 0.75 * node->size;
+	vect[0] = { 0, -r, 0 };//nbr s
+	vect[1] = { r, 0, 0 };//nbr e
+	vect[2] = { 0,  r, 0 };//nbr n
+	vect[3] = { -r, 0, 0 };//nbr w
+	vect[4] = { 0, 0,  r };//nbr t
+	vect[5] = { 0, 0, -r };//nbr b
 
 	for (int j = 0; j < 6; j++) {
 		vector<double> pt = node->position;

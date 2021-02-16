@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <vector>
+#include <queue>
 #include <set>
 #include <stdlib.h>
 #include <stdio.h>
@@ -30,7 +31,7 @@ using namespace std;
 
 class cOctree {
 public:
-    static const int MAX_OCTREE_LEVELS = 5;
+    static const int MAX_OCTREE_LEVELS = 6;
     static const int MIN_OCTREE_LEVELS = 2;
     static const int MAX_OCTNODE_FEATS = 1;
     int branchOffsets[8][3];
@@ -73,6 +74,7 @@ public:
     vector<cOctNode*> getNodesFromLabel(int polyLabel);	
     vector<cOctNode*> getSortedNodesToCheck(cLine &ray);
 
+    void cutNode(cOctNode* node);
     void splitNode(cOctNode* node);
     void splitNodeByLevel(int level, cOctNode *node);
     void splitOctreeByMinLevel(cOctNode *node);
@@ -80,6 +82,10 @@ public:
     void splitOctreeByFeaturePt(cOctNode *node);
     void getOctreeDepth(cOctNode *node);
     void balanceOctree(cOctNode *node);
+    void balNbrNodes(cOctNode* node);
+    void balOctree2to1(vector<cOctNode*> nodesList);
+    bool is2to1Bal(cOctNode* node);
+    void splitNodeBy2to1Bal(cOctNode* node);
     void splitNodeByLevelDiff(int lvlDiff,cOctNode *node);
     void splitNodeById(string node_id);
     void splitExtNodeNbr(cOctNode* node);
@@ -92,6 +98,8 @@ public:
     void setup_nbrNodesState(cOctNode* node);
 
     vector<cOctNode*> getNbr6Nodes(cOctNode* node);
+    vector<cOctNode*> getNbr18Nodes(cOctNode* node);
+
 
     void setup_leafNodesList(cOctNode* node);
     void update_leafNodesList(cOctNode* node);

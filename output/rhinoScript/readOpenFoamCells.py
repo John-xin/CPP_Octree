@@ -89,11 +89,11 @@ def drawCell(cellIndx):
         points=[]
         for indx in face:
             points.append(ptsList[indx])
-            rs.AddText(indx,ptsList[indx],0.2)
+            rs.AddText(str(indx),ptsList[indx],0.2)
         points.append(points[0])
         rs.AddPolyline(points)
 
-cellIndxList=[13,83 ]
+cellIndxList=range(1047)
 
 for cellIndx in cellIndxList:
     drawCell(cellIndx)
