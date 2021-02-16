@@ -27,6 +27,7 @@ void cOctreeApp::defineBody(vector<double> _ptInGeom) {
 
 void cOctreeApp::buildOctree() {
 	std::cout << "Min Octree Level is " << octree->MIN_OCTREE_LEVELS << "\n";
+	std::cout << "Max Octree Level is " << octree->MAX_OCTREE_LEVELS << "\n";
 	std::cout << "Max FeatPt in node is " << octree->MAX_OCTNODE_FEATS << "\n\n";
 	//1. init root node
     octree->setup_root();

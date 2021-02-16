@@ -18,7 +18,7 @@ int main()
     app->geom->readSTLData(fileName);
     app->geom->extractFeature();
     //vector<double> pt3D{ 0.15,0.5,0.1 };
-    vector<double> pt3D{ 7,7,7 };
+    vector<double> pt3D{ 7.1,8.2,9.3 };
     app->defineBody(pt3D);
     //+++++++ cGeomData geom is initialized +++++++++++++
 

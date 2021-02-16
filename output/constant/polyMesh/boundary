@@ -12,29 +12,29 @@ FoamFile
 	bldg
 	{
 		type    unAssigned;
-		nFaces    36;
-		startFace    2870;
+		nFaces    13;
+		startFace    2315;
 	}
 
 	ground
 	{
 		type    unAssigned;
-		nFaces    159;
-		startFace    2906;
+		nFaces    120;
+		startFace    2328;
 	}
 
 	box
 	{
 		type    unAssigned;
-		nFaces    717;
-		startFace    3065;
+		nFaces    536;
+		startFace    2448;
 	}
 
 	unAssigned
 	{
 		type    unAssigned;
-		nFaces    248;
-		startFace    3782;
+		nFaces    23;
+		startFace    2984;
 	}
 
 )

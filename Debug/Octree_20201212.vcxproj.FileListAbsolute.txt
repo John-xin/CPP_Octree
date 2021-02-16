@@ -2,3 +2,5 @@ D:\Johnx\Person\cpp_octree\Octree_20201212\Debug\Octree.exe
 D:\Johnx\Person\cpp_octree\Octree_20201212\Debug\Octree.pdb
 E:\PB\Code\CPP_Octree\Debug\Octree.exe
 E:\PB\Code\CPP_Octree\Debug\Octree.pdb
+D:\Johnx\Person\cpp_octree\CPP_Octree_2021\Debug\Octree.exe
+D:\Johnx\Person\cpp_octree\CPP_Octree_2021\Debug\Octree.pdb

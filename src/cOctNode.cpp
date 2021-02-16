@@ -413,9 +413,9 @@ bool cOctNode::sphereRayIntersect(cLine &ray)
     double radius = commonFunc::getInstance()->distBetweenPoints(low,position);
 
     // Project centre of sphere (node.position) onto ray
-    vector<double> oc = commonFunc::getInstance()->vectSubtract(position, ray.p0);
-    double s = commonFunc::getInstance()->dotProduct(oc,ray.dir);
-    vector<double> projpnt = commonFunc::getInstance()->vectAdd(ray.p0, ray.dir, s);
+    vector<double> oc = commonFunc::getInstance()->vectSubtract(position, ray.p0); //vector - ray Origin -> node's Center 
+    double s = commonFunc::getInstance()->dotProduct(oc,ray.dir); // projection length of oc onto ray
+    vector<double> projpnt = commonFunc::getInstance()->vectAdd(ray.p0, ray.dir, s); //move ray origin along ray dir to the projection point
     double dist = commonFunc::getInstance()->distBetweenPoints(projpnt,position);
 
     // If distance between spherical centre and projected point is

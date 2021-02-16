@@ -456,11 +456,22 @@ int cOctree::isInteriorNode(cOctNode* node) {
 	vector<Intersection> intersections;
 	cLine ray(node->position, cGeomData::getInstance()->ptInGeom,0); //depends on defindBody() to initialize ptInGeom;
 	intersections=findRayIntersect(ray);
+	double tol = 1e-6;
 
 	int numOfInts=0;
-	for(unsigned i=0;i<intersections.size();i++){
-		if(intersections[i].s>0) {numOfInts++;}
+	if (intersections.size()==1) {
+		if (intersections[0].s > 0) {
+			numOfInts++;
+		}
 	}
+	else if(intersections.size()>1){
+		for (unsigned i = 1; i < intersections.size(); i++) {
+			if (intersections[i].s > 0 && intersections[i].s- intersections[i-1].s>tol) {
+				numOfInts++;
+			}
+		}
+	}
+
 
 	if((numOfInts%2)==0){
 		return 0;//0 - exterior node
