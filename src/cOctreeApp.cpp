@@ -74,9 +74,10 @@ void cOctreeApp::buildOFMesh()
     //from leaf nodes -> identify non-repeated mshPt
 	ofMesh->setup_mshPtList(octree->leafNodesList);
 	//ofMesh->setup_mshPtList(ofMesh->mshNodesList);
-
-	//ofMesh->setup_mshPtList(ofMesh->mshNodesList);
+	util->output_nodes("./output/leafNodes.txt", octree->leafNodesList);
 	cout << "num of mshPts is " << ofMesh->mshPtsList.size() << "\n";
+	ofMesh->saveAsOFMeshPts();
+	
 	//from leaf nodes -> define node -> 6 faces by mshPt index
     //init mshFace -> own, nid, low, upp, ptIndxList
     //and mark mshVolIndx

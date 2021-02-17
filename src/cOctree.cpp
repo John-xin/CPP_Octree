@@ -278,6 +278,50 @@ void cOctree::balanceOctree(cOctNode* node) {
 	}
 }
 
+void cOctree::balNbrNodes(cOctNode* node)
+{
+	vector<cOctNode*> checkList;
+	vector<cOctNode*> nbrNodes = getNbr18Nodes(node);
+	for (cOctNode* nbrNode : nbrNodes) {
+		if (node->level - nbrNode->level >= 1) {
+			cutNode(nbrNode);
+			checkList.push_back(nbrNode);
+		}
+	}
+
+	for (cOctNode* checkNode : checkList) {
+		balNbrNodes(checkNode);
+	}
+
+}
+
+void cOctree::updateNbrNodes(cOctNode* node)
+{
+	for (cOctNode* child : nbrNode->children) {
+		nodesList.push_back(child);
+	}
+
+	vector<cOctNode*> nbr6Nodes = getNbr6Nodes(nbrNode);
+	for (cOctNode* myNode : nbr6Nodes) {
+		nodesList.push_back(myNode);
+	}
+
+	//deal with nbr setting
+    //need to optimize. there are many repeated nodes in the list
+	vector<cOctNode*> nbr6Nodes = getNbr6Nodes(node);
+	for (cOctNode* myNode : nbr6Nodes) {
+		nodesList.push_back(myNode);
+	}
+
+
+	for (cOctNode* myNode : nodesList) {
+		if (myNode->nid == "0-1-6") {
+			cout << "";
+		}
+		setLeafNodeNbr(myNode);
+	}
+}
+
 void cOctree::balOctree2to1(vector<cOctNode*> nodesList)
 {
 	int checkCount = 0;
@@ -422,7 +466,9 @@ void cOctree::setup_interiorNode(cOctNode* node) {
 //			}
 //		}
 //	}
-
+	if (node->nid=="0-1-2-2-2-2-2" || node->nid == "0-3-0-0-0-0-0") {
+		cout << "";
+	}
 //	if(node->isInteriorNode==1){
 //		cout<<"number of Interior nodes is "<<numOfNodes<<"\n";
 //	}else{
@@ -459,14 +505,15 @@ int cOctree::isInteriorNode(cOctNode* node) {
 	double tol = 1e-6;
 
 	int numOfInts=0;
-	if (intersections.size()==1) {
-		if (intersections[0].s > 0) {
-			numOfInts++;
+
+	for (unsigned i = 0; i < intersections.size(); i++) {
+		if (i == 0) {
+			if (intersections[0].s > 0) {
+				numOfInts++;
+			}
 		}
-	}
-	else if(intersections.size()>1){
-		for (unsigned i = 1; i < intersections.size(); i++) {
-			if (intersections[i].s > 0 && intersections[i].s- intersections[i-1].s>tol) {
+		else {
+			if (intersections[i].s > 0 && intersections[i].s - intersections[i - 1].s > tol) {
 				numOfInts++;
 			}
 		}

@@ -76,6 +76,9 @@ void cFace::getN()
 double cFace::getAngle(cFace* surface)
 {
 	double tol=0.000001;
+    if (nid=="unAssigned" || surface->nid=="unAssigned") {
+        cout << "";
+    }
     getN();
     surface->getN();
 	double angle;

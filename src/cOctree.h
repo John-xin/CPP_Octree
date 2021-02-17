@@ -31,7 +31,7 @@ using namespace std;
 
 class cOctree {
 public:
-    static const int MAX_OCTREE_LEVELS = 6;
+    static const int MAX_OCTREE_LEVELS = 7;
     static const int MIN_OCTREE_LEVELS = 2;
     static const int MAX_OCTNODE_FEATS = 1;
     int branchOffsets[8][3];
@@ -83,6 +83,7 @@ public:
     void getOctreeDepth(cOctNode *node);
     void balanceOctree(cOctNode *node);
     void balNbrNodes(cOctNode* node);
+    void updateNbrNodes(cOctNode* node);
     void balOctree2to1(vector<cOctNode*> nodesList);
     bool is2to1Bal(cOctNode* node);
     void splitNodeBy2to1Bal(cOctNode* node);

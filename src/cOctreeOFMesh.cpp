@@ -236,6 +236,7 @@ void cOctreeOFMesh::setup_nodeMshFaceState()
 		for (unsigned j = 0; j < node->mshFacesList.size(); j++) {
 			nbr = node->nbrsList[j];
 			currentMshFace = &node->mshFacesList[j];
+
 			if (nbr.size() == 0) {
 				node->mshFacesList[j].state = FaceState::boundary;
 				node->mshFacesList[j].exportState = true;
