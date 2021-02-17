@@ -169,49 +169,42 @@ void cOctree::cutNode(cOctNode* node)
 	node->geoFFacesList.resize(0);
 }
 
-// +++++++++ split node
-void cOctree::splitNode(cOctNode* node) {
-	vector<cOctNode*> nodesList;
-    // Split node into 8 branches
-	cutNode(node);
-	for (cOctNode* child : node->children) {
-		nodesList.push_back(child);
+void cOctree::split2Bal(cOctNode* node)
+{
+	if (node->isLeafNode()) {
+		// Split node into 8 branches
+		cutNode(node);
+		for (cOctNode* child : node->children) {
+			checkNodesList.push_back(child);
+		}
 	}
-	
+
 	// if the node level is larger than the min-octree level, then make the nbr nodes balance to 2:1
 	// e.g. cut node is level 2, min level is 1. After cutting, node's children is level 3, the octree becomes 3:1 
 	if (node->level - MIN_OCTREE_LEVELS >= 1) {
 		vector<cOctNode*> nbrNodes = getNbr18Nodes(node);
 		for (cOctNode* nbrNode : nbrNodes) {
 			if (node->level - nbrNode->level >= 1) {
-				cutNode(nbrNode);
-
-				for (cOctNode* child : nbrNode->children) {
-					nodesList.push_back(child);
-				}
-
-				vector<cOctNode*> nbr6Nodes = getNbr6Nodes(nbrNode);
-				for (cOctNode* myNode : nbr6Nodes) {
-					nodesList.push_back(myNode);
-				}
+				split2Bal(nbrNode);
 			}
 		}
 	}
+
 	//deal with nbr setting
-	//need to optimize. there are many repeated nodes in the list
 	vector<cOctNode*> nbr6Nodes = getNbr6Nodes(node);
 	for (cOctNode* myNode : nbr6Nodes) {
-		nodesList.push_back(myNode);
+		checkNodesList.push_back(myNode);
 	}
+}
 
+// +++++++++ split node
+void cOctree::splitNode(cOctNode* node) {
+	checkNodesList.resize(0);
+	
+	//return a list of nodes to set nbrs
+	split2Bal(node);
 
-	for (cOctNode* myNode : nodesList) {
-		if (myNode->nid=="0-1-6") {
-			cout << "";
-		}
-		setLeafNodeNbr(myNode);
-	}
-
+	setup_NodesNbr(checkNodesList);
 }
 void cOctree::splitOctreeByFeaturePt(cOctNode* node) {
 
@@ -278,115 +271,6 @@ void cOctree::balanceOctree(cOctNode* node) {
 	}
 }
 
-void cOctree::balNbrNodes(cOctNode* node)
-{
-	vector<cOctNode*> checkList;
-	vector<cOctNode*> nbrNodes = getNbr18Nodes(node);
-	for (cOctNode* nbrNode : nbrNodes) {
-		if (node->level - nbrNode->level >= 1) {
-			cutNode(nbrNode);
-			checkList.push_back(nbrNode);
-		}
-	}
-
-	for (cOctNode* checkNode : checkList) {
-		balNbrNodes(checkNode);
-	}
-
-}
-
-void cOctree::updateNbrNodes(cOctNode* node)
-{
-	for (cOctNode* child : nbrNode->children) {
-		nodesList.push_back(child);
-	}
-
-	vector<cOctNode*> nbr6Nodes = getNbr6Nodes(nbrNode);
-	for (cOctNode* myNode : nbr6Nodes) {
-		nodesList.push_back(myNode);
-	}
-
-	//deal with nbr setting
-    //need to optimize. there are many repeated nodes in the list
-	vector<cOctNode*> nbr6Nodes = getNbr6Nodes(node);
-	for (cOctNode* myNode : nbr6Nodes) {
-		nodesList.push_back(myNode);
-	}
-
-
-	for (cOctNode* myNode : nodesList) {
-		if (myNode->nid == "0-1-6") {
-			cout << "";
-		}
-		setLeafNodeNbr(myNode);
-	}
-}
-
-void cOctree::balOctree2to1(vector<cOctNode*> nodesList)
-{
-	int checkCount = 0;
-	queue<cOctNode*> toCheckNodes;
-	for (cOctNode* node : nodesList) {
-		toCheckNodes.push(node);
-	}
-
-	while (toCheckNodes.size() != 0) {
-		cOctNode* myNode = toCheckNodes.front();
-		if (myNode->isLeafNode()) {
-			if (!is2to1Bal(myNode)) {
-				splitNodeBy2to1Bal(myNode);
-				vector<cOctNode*> introducedNodes = getNbr6Nodes(myNode);
-				checkCount++;
-				for (cOctNode* node : introducedNodes) {
-					toCheckNodes.push(node);
-				}
-			}
-		}
-		toCheckNodes.pop();
-	}
-
-	cout << "Check 2to1Bal: Number of nodes made 2to1 is " << checkCount << "\n";
-	update_leafNodesList(&root);
-}
-bool cOctree::is2to1Bal(cOctNode* node)
-{
-	//if any nbr level - node level > 1 then 2to1 Bal test is false
-	for (vector<cOctNode*> nbr : node->nbrsList) {
-		for (cOctNode* nbrNode : nbr) {
-			if (nbrNode->level - node->level > 1) {
-				return false;
-			}
-		}
-	}
-	return true;
-}
-void cOctree::splitNodeBy2to1Bal(cOctNode* node)
-{
-	if (node->isLeafNode()) {
-		splitNode(node);
-		//2. Setup the new split nodes
-		
-		for (cOctNode* child : node->children) {
-				setup_boundaryNode(child);
-				setup_interiorNode(child);
-				setLeafNodeNbr(child);
-		}
-
-		//3. Repair the nbr relationship of the split node's nbrs and introduce new possible error nodes to check
-		vector<cOctNode*> nbr6Nodes = getNbr6Nodes(node);
-		for (cOctNode* myNode : nbr6Nodes) {
-			setLeafNodeNbr(myNode);
-		}
-		//4. check children
-		for (cOctNode* child : node->children) {
-			if (!is2to1Bal(node->children[0])) {
-				splitNodeBy2to1Bal(child);
-			}
-		}
-	}
-
-
-}
 void cOctree::splitNodeByLevelDiff(int lvlDiff, cOctNode *node){
 	if (depth- node->level > lvlDiff){
 		splitNode(node);
@@ -466,9 +350,7 @@ void cOctree::setup_interiorNode(cOctNode* node) {
 //			}
 //		}
 //	}
-	if (node->nid=="0-1-2-2-2-2-2" || node->nid == "0-3-0-0-0-0-0") {
-		cout << "";
-	}
+
 //	if(node->isInteriorNode==1){
 //		cout<<"number of Interior nodes is "<<numOfNodes<<"\n";
 //	}else{
@@ -663,10 +545,9 @@ void cOctree::update_leafNodesList(cOctNode* node)
 	setup_leafNodesList(node);
 }
 
-void cOctree::setup_leafNodesNbr() {
-	//assume node level in the tree is less than one
-	for (unsigned i = 0; i < leafNodesList.size(); i++) {
-		cOctNode* node = leafNodesList[i];
+void cOctree::setup_NodesNbr(vector<cOctNode*> nodesList) {
+	for (unsigned i = 0; i < nodesList.size(); i++) {
+		cOctNode* node = nodesList[i];
 		setLeafNodeNbr(node);
 	}
 }

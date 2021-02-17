@@ -42,6 +42,7 @@ public:
     vector<cOctNode*> nonBNodesList;
     vector<cOctNode*> leafNodesList;
     vector<cOctNode*> tmpNodesList;
+    vector<cOctNode*> checkNodesList;
     int num_allNodes, num_intlNodes, num_extNodes, num_bNodes;
 
     //int numOfNodesTested=0;
@@ -68,13 +69,14 @@ public:
     vector<Intersection> findRayIntersect(cLine &ray);
     set<int> getListPolysToCheck(cLine &ray);
     void getPolysToCheck(cOctNode *node, cLine &ray, set<int> &intTestPolys);
-    //void getNodesToCheck(cOctNode &node, cLine &ray, vector<pair<cOctNode*,double> > &nodeList);
+
     vector<int> findRayIntersects(vector<cLine> &rayList);
     vector<int> findRayIntersectsSorted(vector<cLine> &rayList);		
     vector<cOctNode*> getNodesFromLabel(int polyLabel);	
     vector<cOctNode*> getSortedNodesToCheck(cLine &ray);
 
     void cutNode(cOctNode* node);
+    void split2Bal(cOctNode* node);
     void splitNode(cOctNode* node);
     void splitNodeByLevel(int level, cOctNode *node);
     void splitOctreeByMinLevel(cOctNode *node);
@@ -82,11 +84,7 @@ public:
     void splitOctreeByFeaturePt(cOctNode *node);
     void getOctreeDepth(cOctNode *node);
     void balanceOctree(cOctNode *node);
-    void balNbrNodes(cOctNode* node);
-    void updateNbrNodes(cOctNode* node);
-    void balOctree2to1(vector<cOctNode*> nodesList);
-    bool is2to1Bal(cOctNode* node);
-    void splitNodeBy2to1Bal(cOctNode* node);
+    
     void splitNodeByLevelDiff(int lvlDiff,cOctNode *node);
     void splitNodeById(string node_id);
     void splitExtNodeNbr(cOctNode* node);
@@ -105,8 +103,9 @@ public:
     void setup_leafNodesList(cOctNode* node);
     void update_leafNodesList(cOctNode* node);
 
-    void setup_leafNodesNbr();
+    void setup_NodesNbr(vector<cOctNode*> nodesList);
     void setLeafNodeNbr(cOctNode* node);
+
     void delExtNodes();
     void delExtNodes2(cOctNode* &node);
 

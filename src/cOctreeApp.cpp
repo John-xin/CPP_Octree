@@ -72,8 +72,8 @@ void cOctreeApp::buildOFMesh()
 	cout << "num of mshNodes is " << ofMesh->mshNodesList.size() << "\n";
 	//4. +++++++++++++++++++++++++++
     //from leaf nodes -> identify non-repeated mshPt
-	ofMesh->setup_mshPtList(octree->leafNodesList);
-	//ofMesh->setup_mshPtList(ofMesh->mshNodesList);
+	//ofMesh->setup_mshPtList(octree->leafNodesList);
+	ofMesh->setup_mshPtList(ofMesh->mshNodesList);
 	util->output_nodes("./output/leafNodes.txt", octree->leafNodesList);
 	cout << "num of mshPts is " << ofMesh->mshPtsList.size() << "\n";
 	ofMesh->saveAsOFMeshPts();
